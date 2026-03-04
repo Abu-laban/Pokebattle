@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="PokéBattle">
+<meta name="theme-color" content="#FFD600">
+<meta name="description" content="لعبة معارك البوكيمون">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/25.png">
+<title>PokéBattle</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Exo+2:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{--fire:#FF6B35;--water:#4FC3F7;--grass:#66BB6A;--poison:#AB47BC;--psychic:#EC407A;--normal:#BDBDBD;--electric:#FFD600;--ghost:#7E57C2;--dragon:#5C6BC0;--ice:#80DEEA;--fighting:#EF5350;--border:rgba(255,255,255,0.1);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Exo 2',sans-serif;color:#fff;min-height:100vh;overflow-x:hidden;background:#0a0a1a;}
+  .bg-layer{position:fixed;inset:0;z-index:0;background:radial-gradient(ellipse at 20% 50%,rgba(255,107,53,.15) 0%,transparent 55%),radial-gradient(ellipse at 80% 30%,rgba(79,195,247,.12) 0%,transparent 55%),radial-gradient(ellipse at 50% 90%,rgba(102,187,106,.1) 0%,transparent 50%),linear-gradient(180deg,#0a0a1a 0%,#0d1b2a 100%);}
+  .wrap{position:relative;z-index:2;max-width:900px;margin:0 auto;padding:16px;}
+  header{text-align:center;padding:16px 0 22px;}
+  header h1{font-family:'Press Start 2P',monospace;font-size:clamp(13px,3vw,20px);background:linear-gradient(135deg,#FFD600,#FF6B35,#EC407A);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:3px;filter:drop-shadow(0 0 20px rgba(255,107,53,.4));}
+  .subtitle{font-size:10px;color:rgba(255,255,255,.35);margin-top:5px;letter-spacing:3px;text-transform:uppercase;}
+
+  /* SELECTION */
+  #sel-screen{display:block;}
+  #bat-screen{display:none;}
+  .sel-label{font-family:'Press Start 2P',monospace;font-size:9px;color:#FFD600;text-align:center;margin-bottom:16px;letter-spacing:2px;}
+  .sel-info{text-align:center;font-size:12px;color:#aaa;margin-bottom:13px;min-height:18px;}
+  .poke-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:10px;margin-bottom:20px;}
+  .poke-card{background:rgba(255,255,255,.04);border:2px solid rgba(255,255,255,.07);border-radius:18px;padding:12px 7px 9px;text-align:center;cursor:pointer;transition:all .28s cubic-bezier(.34,1.56,.64,1);
+    opacity:0;transform:translateY(22px);animation:cardReveal .4s cubic-bezier(.34,1.56,.64,1) forwards;}
+  @keyframes cardReveal{to{opacity:1;transform:translateY(0);}}
+  .gen-divider{animation:cardReveal .4s ease forwards;}
+  .poke-card:hover{transform:translateY(-6px) scale(1.04);border-color:rgba(255,255,255,.22);box-shadow:0 12px 35px rgba(0,0,0,.5);}
+  .poke-card.sel{border-color:#FFD600;box-shadow:0 0 25px rgba(255,214,0,.45);background:rgba(255,214,0,.07);}
+  .poke-img{width:68px;height:68px;object-fit:contain;display:block;margin:0 auto 5px;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6));transition:transform .3s;}
+  .poke-card:hover .poke-img{transform:scale(1.1) translateY(-3px);}
+  .poke-card.sel .poke-img{filter:drop-shadow(0 0 12px rgba(255,214,0,.7));}
+  .poke-name{font-family:'Press Start 2P',monospace;font-size:6px;color:#fff;margin-bottom:5px;display:block;}
+  .tbadge{display:inline-block;padding:2px 6px;border-radius:20px;font-size:7px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;margin:1px;}
+  .poke-stat{font-size:9px;color:rgba(255,255,255,.35);margin-top:4px;}
+
+
+  /* GEN TABS */
+  .gen-tabs{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:18px;}
+
+  .gen-tab{
+    position:relative;overflow:hidden;cursor:pointer;
+    background:rgba(255,255,255,.04);
+    border:2px solid rgba(255,255,255,.1);
+    border-radius:18px;
+    padding:10px 14px;
+    display:flex;flex-direction:column;align-items:center;gap:6px;
+    min-width:80px;
+    transition:all .3s cubic-bezier(.34,1.56,.64,1);
+  }
+  .gen-tab::before{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(135deg,rgba(255,255,255,.06),transparent);
+    opacity:0;transition:opacity .3s;
+  }
+  .gen-tab:hover{transform:translateY(-4px) scale(1.04);border-color:rgba(255,255,255,.25);box-shadow:0 10px 28px rgba(0,0,0,.4);}
+  .gen-tab:hover::before{opacity:1;}
+
+  .gen-tab-logo{width:44px;height:44px;object-fit:contain;filter:drop-shadow(0 2px 6px rgba(0,0,0,.6)) grayscale(.4);transition:all .3s;}
+  .gen-tab-label{font-family:'Press Start 2P',monospace;font-size:6px;color:rgba(255,255,255,.45);letter-spacing:1px;transition:color .3s;}
+  .gen-tab-sub{font-size:8px;color:rgba(255,255,255,.25);transition:color .3s;}
+
+  /* ALL tab special */
+  .gen-tab.g-all .gen-tab-logo{font-size:28px;line-height:44px;text-align:center;filter:none;}
+
+  .gen-tab.active{border-color:transparent;transform:translateY(-4px) scale(1.05);}
+  .gen-tab.active .gen-tab-logo{filter:drop-shadow(0 0 14px currentColor) grayscale(0);transform:scale(1.1);}
+  .gen-tab.active .gen-tab-label{color:#fff;}
+  .gen-tab.active .gen-tab-sub{color:rgba(255,255,255,.6);}
+
+  .gen-tab.g-all.active{background:linear-gradient(145deg,rgba(255,214,0,.18),rgba(255,107,53,.14));border-color:#FFD60066;box-shadow:0 0 22px rgba(255,214,0,.25);}
+  .gen-tab.g-1.active{background:linear-gradient(145deg,rgba(255,107,53,.18),rgba(236,64,122,.14));border-color:#FF6B3566;box-shadow:0 0 22px rgba(255,107,53,.3);}
+  .gen-tab.g-2.active{background:linear-gradient(145deg,rgba(102,187,106,.18),rgba(79,195,247,.14));border-color:#66BB6A66;box-shadow:0 0 22px rgba(102,187,106,.3);}
+  .gen-tab.g-3.active{background:linear-gradient(145deg,rgba(124,77,255,.18),rgba(224,64,251,.14));border-color:#7C4DFF66;box-shadow:0 0 22px rgba(124,77,255,.3);}
+
+  /* active indicator dot */
+  .gen-tab.active::after{content:'';position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff;}
+  .gen-divider{grid-column:1/-1;margin:10px 0 6px;display:flex;align-items:center;gap:12px;}
+  .gen-divider-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,currentColor,transparent);opacity:.3;}
+  .gen-divider-badge{display:flex;align-items:center;gap:10px;background:rgba(0,0,0,.4);border:2px solid currentColor;border-radius:16px;padding:8px 16px;white-space:nowrap;box-shadow:0 0 20px rgba(0,0,0,.4);}
+  .gen-divider-logo{width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.6));}
+  .gen-divider-text{font-family:'Press Start 2P',monospace;font-size:7px;letter-spacing:1.5px;color:inherit;}
+  .gen-divider-num{font-family:'Press Start 2P',monospace;font-size:6px;opacity:.6;color:inherit;}
+  .poke-count{text-align:center;font-size:10px;color:rgba(255,255,255,.3);margin-bottom:10px;letter-spacing:1px;}
+
+
+  /* RANDOM SPOTLIGHT */
+  @keyframes spotlight{
+    0%{box-shadow:0 0 0 0 rgba(255,214,0,0);border-color:rgba(255,255,255,.07);}
+    30%{box-shadow:0 0 40px 8px rgba(255,214,0,.7),0 0 80px 20px rgba(255,107,53,.4);border-color:#FFD600;}
+    70%{box-shadow:0 0 40px 8px rgba(255,214,0,.7),0 0 80px 20px rgba(255,107,53,.4);border-color:#FFD600;}
+    100%{box-shadow:0 0 0 0 rgba(255,214,0,0);border-color:#FFD600;}
+  }
+  .poke-card.rand-spotlight{
+    animation:spotlight 1.8s ease forwards, cardReveal 0s !important;
+    transform:scale(1.12) translateY(-8px) !important;
+    z-index:10;position:relative;
+  }
+  .poke-card.rand-spotlight .poke-img{
+    filter:drop-shadow(0 0 18px rgba(255,214,0,.9)) !important;
+    transform:scale(1.15) translateY(-5px);
+  }
+
+  /* GEN BACKGROUNDS */
+  .poke-grid{position:relative;transition:background .5s ease;}
+
+  .gen-bg{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    transition:opacity .6s ease;opacity:0;
+  }
+  .gen-bg.show{opacity:1;}
+  .gen-bg-all{
+    background:
+      linear-gradient(180deg, #0a1628 0%, #0d2240 40%, #0a3350 70%, #0d2240 100%);
+  }
+  /* Peaceful water ripples */
+  .water-layer{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    opacity:0;transition:opacity .8s ease;
+    overflow:hidden;
+    will-change:opacity;
+  }
+  .water-layer *{pointer-events:none;}
+  .water-layer.show{opacity:1;}
+  .water-surface{
+    position:fixed;bottom:0;left:0;right:0;height:45%;
+    background:linear-gradient(180deg,
+      rgba(30,120,200,.0) 0%,
+      rgba(30,140,220,.15) 30%,
+      rgba(20,100,180,.35) 70%,
+      rgba(10,70,150,.5) 100%);
+  }
+  .water-surface::before{
+    content:'';position:absolute;inset:0;
+    background:repeating-linear-gradient(
+      90deg,
+      transparent 0px, transparent 40px,
+      rgba(255,255,255,.03) 40px, rgba(255,255,255,.03) 41px
+    );
+    animation:waterMove 4s linear infinite;
+  }
+  @keyframes waterMove{from{background-position:0 0}to{background-position:80px 0}}
+
+  .ripple{
+    position:absolute;border-radius:50%;
+    border:1.5px solid rgba(100,200,255,.3);
+    animation:rippleOut 3s ease-out infinite;
+    pointer-events:none;
+  }
+  .ripple:nth-child(1){width:60px;height:20px;bottom:38%;left:30%;animation-delay:0s;}
+  .ripple:nth-child(2){width:100px;height:33px;bottom:35%;left:28%;animation-delay:.6s;}
+  .ripple:nth-child(3){width:140px;height:46px;bottom:32%;left:26%;animation-delay:1.2s;}
+  .ripple:nth-child(4){width:60px;height:20px;bottom:30%;right:25%;animation-delay:1.5s;}
+  .ripple:nth-child(5){width:90px;height:30px;bottom:27%;right:23%;animation-delay:2.1s;}
+  @keyframes rippleOut{0%{transform:scale(.2);opacity:.8}100%{transform:scale(1);opacity:0}}
+
+  /* Stars in sky */
+  .stars-layer{position:fixed;inset:0;}
+  .star{position:absolute;background:#fff;border-radius:50%;animation:twinkle var(--d,3s) ease-in-out infinite var(--delay,0s);}
+  @keyframes twinkle{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
+
+  /* Moon */
+  /* floating sparkles */
+  .sparkle{
+    position:fixed;color:rgba(180,230,255,.5);
+    font-size:10px;animation:sparkleFloat var(--sd,4s) ease-in-out infinite var(--sdelay,0s);
+    pointer-events:none;
+  }
+  @keyframes sparkleFloat{0%,100%{transform:translateY(0) rotate(0deg);opacity:.2}50%{transform:translateY(-20px) rotate(180deg);opacity:.7}}
+  .gen-bg-1{
+    background:
+      radial-gradient(ellipse at 15% 40%,rgba(255,107,53,.13) 0%,transparent 50%),
+      radial-gradient(ellipse at 80% 70%,rgba(236,64,122,.1) 0%,transparent 50%),
+      radial-gradient(ellipse at 50% 20%,rgba(255,214,0,.08) 0%,transparent 40%);
+  }
+  .gen-bg-2{
+    background:
+      radial-gradient(ellipse at 20% 60%,rgba(102,187,106,.13) 0%,transparent 50%),
+      radial-gradient(ellipse at 75% 25%,rgba(79,195,247,.1) 0%,transparent 50%),
+      radial-gradient(ellipse at 50% 80%,rgba(255,214,0,.07) 0%,transparent 40%);
+  }
+  .gen-bg-3{
+    background:
+      radial-gradient(ellipse at 25% 30%,rgba(124,77,255,.14) 0%,transparent 50%),
+      radial-gradient(ellipse at 70% 65%,rgba(224,64,251,.1) 0%,transparent 50%),
+      radial-gradient(ellipse at 50% 10%,rgba(171,71,188,.08) 0%,transparent 40%);
+  }
+
+  /* Floating pokemon silhouettes */
+  .gen-silhouette{
+    position:fixed;pointer-events:none;z-index:0;
+    opacity:0;transition:opacity .8s ease;
+    filter:blur(1px) brightness(.18) saturate(2);
+  }
+  .gen-silhouette.show{opacity:1;}
+  .sil-1{bottom:-30px;right:-20px;width:260px;animation:silFloat1 8s ease-in-out infinite;}
+  .sil-2{top:60px;left:-30px;width:200px;animation:silFloat2 10s ease-in-out infinite;}
+  .sil-3{top:40%;right:5px;width:180px;animation:silFloat3 9s ease-in-out infinite;}
+
+  @keyframes silFloat1{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-20px) rotate(3deg)}}
+  @keyframes silFloat2{0%,100%{transform:translateY(0) rotate(5deg)}50%{transform:translateY(-15px) rotate(-5deg)}}
+  @keyframes silFloat3{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-18px) scale(1.05)}}
+
+  /* BUTTONS */
+  .btn-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+  .start-btn{padding:13px 45px;background:linear-gradient(135deg,#FFD600,#FF6B35);border:none;border-radius:50px;font-family:'Press Start 2P',monospace;font-size:9px;color:#000;cursor:pointer;transition:all .3s;letter-spacing:1px;box-shadow:0 4px 20px rgba(255,107,53,.35);}
+  .start-btn:hover:not(:disabled){transform:scale(1.06);box-shadow:0 0 35px rgba(255,107,53,.6);}
+  .start-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .rand-btn{padding:13px 45px;background:linear-gradient(135deg,#7C4DFF,#E040FB);border:none;border-radius:50px;font-family:'Press Start 2P',monospace;font-size:9px;color:#fff;cursor:pointer;transition:all .3s;letter-spacing:1px;box-shadow:0 4px 20px rgba(124,77,255,.35);}
+  .rand-btn:hover{transform:scale(1.06);box-shadow:0 0 35px rgba(124,77,255,.6);}
+
+  /* ══════════════════════════════
+     FLOWER POPUP
+  ══════════════════════════════ */
+
+
+  @keyframes popIn{from{transform:scale(.3);opacity:0}to{transform:scale(1);opacity:1}}
+
+
+  /* The flower wheel */
+
+  /* Center petal (selected) */
+  .petal-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:90px;height:90px;border-radius:50%;
+    background:linear-gradient(135deg,#7C4DFF,#E040FB);
+    border:3px solid #E040FB;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 30px rgba(224,64,251,.6);
+    z-index:10;overflow:hidden;transition:all .3s;}
+  .petal-center img{width:70px;height:70px;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7));animation:centerSpin 0s linear;}
+
+  /* Surrounding petals */
+  .petal{position:absolute;width:68px;height:68px;border-radius:50%;
+    background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.12);
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;transition:all .3s;overflow:hidden;}
+  .petal:hover{transform-origin:center center;border-color:rgba(255,255,255,.4);box-shadow:0 0 20px rgba(255,255,255,.2);}
+  .petal.highlight{border-color:#FFD600;box-shadow:0 0 20px rgba(255,214,0,.5);background:rgba(255,214,0,.1);}
+  .petal img{width:52px;height:52px;object-fit:contain;filter:drop-shadow(0 3px 8px rgba(0,0,0,.7));}
+
+  /* Spin animation for rolling */
+  @keyframes rollSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+  .spinning .petal-center{animation:rollSpin .15s linear infinite;}
+
+
+  .flower-spin-btn{padding:11px 30px;background:linear-gradient(135deg,#7C4DFF,#E040FB);border:none;border-radius:50px;font-family:'Press Start 2P',monospace;font-size:8px;color:#fff;cursor:pointer;transition:all .3s;}
+  .flower-spin-btn:hover{transform:scale(1.05);box-shadow:0 0 25px rgba(124,77,255,.5);}
+  .flower-go-btn{padding:11px 30px;background:linear-gradient(135deg,#FFD600,#FF6B35);border:none;border-radius:50px;font-family:'Press Start 2P',monospace;font-size:8px;color:#000;cursor:pointer;transition:all .3s;opacity:.4;}
+  .flower-go-btn.ready{opacity:1;}
+  .flower-go-btn.ready:hover{transform:scale(1.05);box-shadow:0 0 25px rgba(255,107,53,.5);}
+
+  /* BATTLE */
+  .arena{border-radius:24px;overflow:hidden;position:relative;background:linear-gradient(180deg,#0d1f3c 0%,#071428 100%);border:1px solid rgba(255,255,255,.08);margin-bottom:13px;box-shadow:0 8px 40px rgba(0,0,0,.6);}
+  .arena-glow{position:absolute;inset:0;background:radial-gradient(ellipse at 25% 60%,rgba(255,107,53,.1),transparent 50%),radial-gradient(ellipse at 75% 40%,rgba(79,195,247,.1),transparent 50%);}
+  .arena-inner{position:relative;z-index:2;padding:20px;}
+  .fighters{display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .fighter{flex:1;background:rgba(0,0,0,.45);border-radius:20px;padding:16px 13px;text-align:center;border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(10px);}
+  .fighter.pl{border-left:3px solid #4FC3F7;}
+  .fighter.en{border-right:3px solid var(--fire);}
+  .ftag{font-family:'Press Start 2P',monospace;font-size:6px;letter-spacing:1px;margin-bottom:7px;opacity:.55;}
+  .fighter.pl .ftag{color:#4FC3F7;}
+  .fighter.en .ftag{color:var(--fire);}
+  .fspr{width:85px;height:85px;object-fit:contain;display:block;margin:0 auto 9px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.7));transition:transform .3s;}
+  .fname{font-family:'Press Start 2P',monospace;font-size:7.5px;margin-bottom:9px;}
+  .hp-wrap{margin-bottom:7px;}
+  .hp-row{display:flex;justify-content:space-between;font-size:10px;color:rgba(255,255,255,.45);margin-bottom:3px;}
+  .hp-track{background:rgba(255,255,255,.08);border-radius:8px;height:9px;overflow:hidden;}
+  .hp-fill{height:100%;border-radius:8px;transition:width .55s ease,background .55s;background:#66BB6A;}
+  .hp-fill.y{background:#FFD600;}
+  .hp-fill.r{background:#f44336;animation:hpPulse 1s ease infinite;}
+  @keyframes hpPulse{0%,100%{opacity:1}50%{opacity:.6}}
+  .ult-track{background:rgba(255,255,255,.07);border-radius:6px;height:5px;overflow:hidden;margin-top:5px;}
+  .ult-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#7C4DFF,#E040FB);transition:width .5s ease;width:0%;}
+  .ult-row{display:flex;justify-content:space-between;font-size:8px;margin-top:2px;color:#9c7fff;}
+  .vs{font-family:'Press Start 2P',monospace;font-size:22px;color:#FFD600;text-shadow:0 0 25px rgba(255,214,0,.6);flex-shrink:0;animation:vsp 2s ease infinite;}
+  @keyframes vsp{0%,100%{text-shadow:0 0 25px rgba(255,214,0,.6)}50%{text-shadow:0 0 45px rgba(255,214,0,1)}}
+  .turn-bar{background:rgba(0,0,0,.4);border-radius:12px;padding:10px 16px;text-align:center;margin-bottom:13px;font-family:'Press Start 2P',monospace;font-size:8px;color:#4FC3F7;letter-spacing:1px;border:1px solid rgba(79,195,247,.18);}
+  .moves-box{background:rgba(0,0,0,.45);border:1px solid var(--border);border-radius:20px;padding:17px;margin-bottom:12px;backdrop-filter:blur(8px);}
+  .moves-head{font-family:'Press Start 2P',monospace;font-size:7px;color:rgba(255,255,255,.35);margin-bottom:12px;letter-spacing:1px;}
+  .moves-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+  .mbtn{padding:10px 9px;border:2px solid transparent;border-radius:14px;cursor:pointer;transition:all .25s ease;text-align:left;}
+  .mbtn:not(:disabled):hover{transform:translateY(-3px) scale(1.02);box-shadow:0 8px 22px rgba(0,0,0,.35);}
+  .mbtn:disabled{opacity:.35;cursor:not-allowed;}
+  .mbtn-name{font-family:'Press Start 2P',monospace;font-size:6.5px;display:block;margin-bottom:5px;}
+  .mbtn-meta{display:flex;justify-content:space-between;align-items:center;}
+  .mbtn-pwr{font-size:11px;font-weight:800;}
+  .ult-note{font-size:8px;color:#CE93D8;margin-top:4px;display:block;}
+  .log{background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:14px;padding:12px 14px;height:88px;overflow-y:auto;font-size:11.5px;line-height:1.9;backdrop-filter:blur(6px);}
+  .log::-webkit-scrollbar{width:3px;}
+  .log::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:2px;}
+  .le{opacity:.6;}.le.new{opacity:1;color:#FFD600;animation:sli .3s ease;}.le.dmg{color:#FF6B35;}.le.sys{color:#4FC3F7;font-style:italic;}
+  @keyframes sli{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+  @keyframes lungeR{0%,100%{transform:translateX(0)}40%{transform:translateX(38px) rotate(5deg)}}
+  @keyframes lungeL{0%,100%{transform:translateX(0)}40%{transform:translateX(-38px) rotate(-5deg)}}
+  @keyframes dmgFlash{0%{filter:drop-shadow(0 6px 18px rgba(0,0,0,.7)) brightness(1)}20%{filter:drop-shadow(0 6px 18px rgba(0,0,0,.7)) brightness(3) sepia(1) saturate(5) hue-rotate(-50deg);opacity:.8}100%{filter:drop-shadow(0 6px 18px rgba(0,0,0,.7)) brightness(1);opacity:1}}
+  .lr{animation:lungeR .42s ease!important;}.ll{animation:lungeL .42s ease!important;}.df{animation:dmgFlash .5s ease!important;}
+  .rov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(14px);}
+  .rov.show{display:flex;}
+  .rcard{background:linear-gradient(145deg,#0d1f3c,#071428);border:2px solid rgba(255,255,255,.12);border-radius:30px;padding:40px 50px;text-align:center;max-width:370px;width:90%;animation:popIn .5s cubic-bezier(.34,1.56,.64,1);box-shadow:0 20px 60px rgba(0,0,0,.7);}
+  .rtitle{font-family:'Press Start 2P',monospace;font-size:clamp(15px,4vw,24px);margin-bottom:8px;}
+  .rtitle.win{background:linear-gradient(135deg,#FFD600,#FF6B35);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+  .rtitle.lose{color:#f44336;}
+  .rsub{font-family:'Press Start 2P',monospace;font-size:9px;color:#aaa;margin-bottom:6px;}
+  .rspr{width:100px;height:100px;object-fit:contain;display:block;margin:16px auto;animation:floatA 1.2s ease infinite alternate;filter:drop-shadow(0 8px 20px rgba(255,214,0,.4));}
+  @keyframes floatA{from{transform:translateY(0)}to{transform:translateY(-16px)}}
+  .rdesc{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:18px;}
+  .pa-btn{padding:12px 35px;background:linear-gradient(135deg,#4FC3F7,#7C4DFF);border:none;border-radius:50px;font-family:'Press Start 2P',monospace;font-size:8px;color:#fff;cursor:pointer;transition:all .3s;letter-spacing:1px;}
+  .pa-btn:hover{transform:scale(1.06);box-shadow:0 0 30px rgba(124,77,255,.55);}
+</style>
+</head>
+<body>
+<div class="bg-layer"></div>
+
+<!-- GEN BACKGROUNDS -->
+<div class="gen-bg gen-bg-all show" id="gbg-all"></div>
+<div class="water-layer show" id="water-layer">
+  <!-- Stars -->
+  <div class="stars-layer" id="stars-layer"></div>
+  <!-- Subtle sparkles -->
+  <div class="sparkle" style="left:15%;top:20%;--sd:3.5s;--sdelay:0s">✦</div>
+  <div class="sparkle" style="left:70%;top:15%;--sd:4s;--sdelay:.8s">✦</div>
+  <div class="sparkle" style="left:40%;top:30%;--sd:3s;--sdelay:1.5s">⋆</div>
+  <div class="sparkle" style="left:85%;top:25%;--sd:5s;--sdelay:.3s">✦</div>
+  <div class="sparkle" style="left:25%;top:35%;--sd:4.5s;--sdelay:2s">⋆</div>
+  <div class="sparkle" style="left:55%;top:18%;--sd:3.8s;--sdelay:1s">✦</div>
+  <!-- Calm water at bottom -->
+  <div class="water-surface">
+    <div class="ripple"></div>
+    <div class="ripple"></div>
+    <div class="ripple"></div>
+    <div class="ripple"></div>
+    <div class="ripple"></div>
+  </div>
+</div>
+<div class="gen-bg gen-bg-1" id="gbg-1"></div>
+<div class="gen-bg gen-bg-2" id="gbg-2"></div>
+<div class="gen-bg gen-bg-3" id="gbg-3"></div>
+
+<!-- GEN SILHOUETTES -->
+<!-- Gen 1: Charizard, Mewtwo, Gyarados -->
+<img class="gen-silhouette sil-1" id="sil-1a" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/6.png">
+<img class="gen-silhouette sil-2" id="sil-1b" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/150.png">
+<img class="gen-silhouette sil-3" id="sil-1c" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/130.png">
+<!-- Gen 2: Ho-Oh, Lugia, Tyranitar -->
+<img class="gen-silhouette sil-1" id="sil-2a" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/250.png">
+<img class="gen-silhouette sil-2" id="sil-2b" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/249.png">
+<img class="gen-silhouette sil-3" id="sil-2c" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/248.png">
+<!-- Gen 3: Rayquaza, Groudon, Kyogre -->
+<img class="gen-silhouette sil-1" id="sil-3a" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/384.png">
+<img class="gen-silhouette sil-2" id="sil-3b" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/383.png">
+<img class="gen-silhouette sil-3" id="sil-3c" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/382.png">
+
+<div class="wrap">
+  <header>
+    <h1>⚡ PokéBattle ⚡</h1>
+    <div class="subtitle">Choose your fighter</div>
+  </header>
+
+  <!-- SELECTION -->
+  <div id="sel-screen">
+    <p class="sel-label">✦ اختر بوكيمونك ✦</p>
+    <div class="btn-row" style="margin-bottom:14px;">
+      <button class="rand-btn" onclick="openFlower()"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png" style="width:20px;height:20px;vertical-align:middle;margin-left:6px;image-rendering:pixelated;"> اختيار عشوائي</button>
+      <button class="start-btn" id="start-btn" disabled onclick="startBattle()"><img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/vs-seeker.png" style="width:20px;height:20px;vertical-align:middle;margin-left:6px;image-rendering:pixelated;"> ابدأ المعركة</button>
+    </div>
+    <p class="sel-info" id="sel-info">اختر بوكيمون للقتال أو استخدم الاختيار العشوائي</p>
+    <div class="gen-tabs" id="gen-tabs">
+      <button class="gen-tab g-all active" onclick="filterGen('all',this)">
+        <div class="gen-tab-logo">✦</div>
+        <div class="gen-tab-label">الكل</div>
+        <div class="gen-tab-sub">100 بوكيمون</div>
+      </button>
+      <button class="gen-tab g-1" onclick="filterGen(1,this)">
+        <img class="gen-tab-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Pokemon_Red_and_Blue_Versions_logo.png/320px-Pokemon_Red_and_Blue_Versions_logo.png" onerror="this.outerHTML='<div class=gen-tab-logo style=font-size:26px;line-height:44px>🔴</div>'">
+        <div class="gen-tab-label">GEN I</div>
+        <div class="gen-tab-sub">Kanto</div>
+      </button>
+      <button class="gen-tab g-2" onclick="filterGen(2,this)">
+        <img class="gen-tab-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Pokemon_GS_logo.png/320px-Pokemon_GS_logo.png" onerror="this.outerHTML='<div class=gen-tab-logo style=font-size:26px;line-height:44px>🟡</div>'">
+        <div class="gen-tab-label">GEN II</div>
+        <div class="gen-tab-sub">Johto</div>
+      </button>
+      <button class="gen-tab g-3" onclick="filterGen(3,this)">
+        <img class="gen-tab-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Pokemon_Ruby_and_Sapphire_logo.png/320px-Pokemon_Ruby_and_Sapphire_logo.png" onerror="this.outerHTML='<div class=gen-tab-logo style=font-size:26px;line-height:44px>🟣</div>'">
+        <div class="gen-tab-label">GEN III</div>
+        <div class="gen-tab-sub">Hoenn</div>
+      </button>
+    </div>
+    <div class="poke-count" id="poke-count">100 بوكيمون</div>
+    <div class="poke-grid" id="poke-grid"></div>
+
+  </div>
+
+  <!-- BATTLE -->
+  <div id="bat-screen">
+    <div class="arena">
+      <div class="arena-glow"></div>
+      <div class="arena-inner">
+        <div class="fighters">
+          <div class="fighter pl">
+            <div class="ftag">— أنت —</div>
+            <img class="fspr" id="pspr" src="" alt="">
+            <div class="fname" id="pname"></div>
+            <div class="hp-wrap">
+              <div class="hp-row"><span>HP</span><span id="php-txt"></span></div>
+              <div class="hp-track"><div class="hp-fill" id="php-fill" style="width:100%"></div></div>
+            </div>
+            <div class="ult-track"><div class="ult-fill" id="pult-fill"></div></div>
+            <div class="ult-row"><span>ULTIMATE</span><span id="pult-txt">0%</span></div>
+          </div>
+          <div class="vs">VS</div>
+          <div class="fighter en">
+            <div class="ftag">— العدو —</div>
+            <img class="fspr" id="espr" src="" alt="">
+            <div class="fname" id="ename"></div>
+            <div class="hp-wrap">
+              <div class="hp-row"><span>HP</span><span id="ehp-txt"></span></div>
+              <div class="hp-track"><div class="hp-fill" id="ehp-fill" style="width:100%"></div></div>
+            </div>
+            <div class="ult-track"><div class="ult-fill" id="eult-fill"></div></div>
+            <div class="ult-row"><span>ULTIMATE</span><span id="eult-txt">0%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="turn-bar" id="turn-bar">🗡️ دورك للهجوم!</div>
+    <div class="moves-box">
+      <div class="moves-head">⚔ اختر هجومك</div>
+      <div class="moves-grid" id="moves-grid"></div>
+    </div>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+
+
+<!-- RESULT -->
+<div class="rov" id="rov">
+  <div class="rcard">
+    <div class="rtitle" id="rtitle"></div>
+    <div class="rsub" id="rsub"></div>
+    <img class="rspr" id="rspr" src="" alt="">
+    <div class="rdesc" id="rdesc"></div>
+    <button class="pa-btn" onclick="resetGame()">🔄 العب مرة أخرى</button>
+  </div>
+</div>
+
+<script>
+const TC={FIRE:'#FF6B35',WATER:'#4FC3F7',GRASS:'#66BB6A',POISON:'#AB47BC',PSYCHIC:'#EC407A',NORMAL:'#BDBDBD',ELECTRIC:'#FFD600',GHOST:'#7E57C2',DRAGON:'#5C6BC0',ICE:'#80DEEA',FIGHTING:'#EF5350',STEEL:'#90A4AE'};
+
+const DEX=[
+  // ═══════════════ GEN 1 (1-151) ═══════════════
+  {id:1,  gen:1,name:'BULBASAUR', hp:120,types:['GRASS','POISON'],moves:[{n:'VINE WHIP',t:'GRASS',p:65,u:false},{n:'RAZOR LEAF',t:'GRASS',p:75,u:false},{n:'SLEEP POWDER',t:'NORMAL',p:40,u:false},{n:'SOLAR BEAM',t:'GRASS',p:175,u:true}]},
+  {id:4,  gen:1,name:'CHARMANDER',hp:110,types:['FIRE'],moves:[{n:'EMBER',t:'FIRE',p:55,u:false},{n:'FLAMETHROWER',t:'FIRE',p:85,u:false},{n:'SLASH',t:'NORMAL',p:50,u:false},{n:'BLAST BURN',t:'FIRE',p:180,u:true}]},
+  {id:7,  gen:1,name:'SQUIRTLE',  hp:115,types:['WATER'],moves:[{n:'WATER GUN',t:'WATER',p:60,u:false},{n:'BUBBLE BEAM',t:'WATER',p:70,u:false},{n:'BITE',t:'NORMAL',p:50,u:false},{n:'HYDRO PUMP',t:'WATER',p:178,u:true}]},
+  {id:6,  gen:1,name:'CHARIZARD', hp:150,types:['FIRE'],moves:[{n:'FLAMETHROWER',t:'FIRE',p:90,u:false},{n:'FIRE SPIN',t:'FIRE',p:65,u:false},{n:'SLASH',t:'NORMAL',p:55,u:false},{n:'BLAST BURN',t:'FIRE',p:185,u:true}]},
+  {id:9,  gen:1,name:'BLASTOISE', hp:145,types:['WATER'],moves:[{n:'HYDRO PUMP',t:'WATER',p:110,u:false},{n:'WATER GUN',t:'WATER',p:65,u:false},{n:'TACKLE',t:'NORMAL',p:45,u:false},{n:'AQUA TAIL',t:'WATER',p:190,u:true}]},
+  {id:3,  gen:1,name:'VENUSAUR',  hp:155,types:['GRASS','POISON'],moves:[{n:'VINE WHIP',t:'GRASS',p:70,u:false},{n:'ENERGY BALL',t:'GRASS',p:85,u:false},{n:'SLUDGE BOMB',t:'POISON',p:90,u:false},{n:'FRENZY PLANT',t:'GRASS',p:180,u:true}]},
+  {id:11, gen:1,name:'METAPOD',   hp:90, types:['BUG'],moves:[{n:'TACKLE',t:'NORMAL',p:40,u:false},{n:'HARDEN',t:'NORMAL',p:20,u:false},{n:'BUG BITE',t:'BUG',p:50,u:false},{n:'IRON DEFENSE',t:'NORMAL',p:100,u:true}]},
+  {id:12, gen:1,name:'BUTTERFREE',hp:125,types:['BUG'],moves:[{n:'CONFUSION',t:'PSYCHIC',p:70,u:false},{n:'PSYBEAM',t:'PSYCHIC',p:80,u:false},{n:'SLEEP POWDER',t:'NORMAL',p:45,u:false},{n:'BUG BUZZ',t:'BUG',p:175,u:true}]},
+  {id:16, gen:1,name:'PIDGEY',    hp:100,types:['NORMAL'],moves:[{n:'GUST',t:'NORMAL',p:45,u:false},{n:'QUICK ATTACK',t:'NORMAL',p:50,u:false},{n:'WING ATTACK',t:'NORMAL',p:60,u:false},{n:'SKY ATTACK',t:'NORMAL',p:170,u:true}]},
+  {id:19, gen:1,name:'RATTATA',   hp:95, types:['NORMAL'],moves:[{n:'TACKLE',t:'NORMAL',p:40,u:false},{n:'BITE',t:'NORMAL',p:55,u:false},{n:'HYPER FANG',t:'NORMAL',p:75,u:false},{n:'SUPER FANG',t:'NORMAL',p:160,u:true}]},
+  {id:23, gen:1,name:'EKANS',     hp:100,types:['POISON'],moves:[{n:'WRAP',t:'NORMAL',p:40,u:false},{n:'POISON STING',t:'POISON',p:55,u:false},{n:'BITE',t:'NORMAL',p:60,u:false},{n:'GUNK SHOT',t:'POISON',p:170,u:true}]},
+  {id:25, gen:1,name:'PIKACHU',   hp:120,types:['ELECTRIC'],moves:[{n:'THUNDERBOLT',t:'ELECTRIC',p:90,u:false},{n:'QUICK ATTACK',t:'NORMAL',p:50,u:false},{n:'IRON TAIL',t:'NORMAL',p:70,u:false},{n:'THUNDER',t:'ELECTRIC',p:185,u:true}]},
+  {id:26, gen:1,name:'RAICHU',    hp:135,types:['ELECTRIC'],moves:[{n:'THUNDERBOLT',t:'ELECTRIC',p:95,u:false},{n:'QUICK ATTACK',t:'NORMAL',p:55,u:false},{n:'THUNDER PUNCH',t:'ELECTRIC',p:80,u:false},{n:'THUNDER',t:'ELECTRIC',p:190,u:true}]},
+  {id:35, gen:1,name:'CLEFAIRY',  hp:115,types:['NORMAL'],moves:[{n:'POUND',t:'NORMAL',p:45,u:false},{n:'DOUBLESLAP',t:'NORMAL',p:55,u:false},{n:'MINIMIZE',t:'NORMAL',p:30,u:false},{n:'MOONBLAST',t:'NORMAL',p:175,u:true}]},
+  {id:37, gen:1,name:'VULPIX',    hp:108,types:['FIRE'],moves:[{n:'EMBER',t:'FIRE',p:55,u:false},{n:'CONFUSE RAY',t:'NORMAL',p:40,u:false},{n:'FIRE SPIN',t:'FIRE',p:65,u:false},{n:'FIRE BLAST',t:'FIRE',p:178,u:true}]},
+  {id:39, gen:1,name:'JIGGLYPUFF',hp:150,types:['NORMAL'],moves:[{n:'POUND',t:'NORMAL',p:50,u:false},{n:'SING',t:'NORMAL',p:30,u:false},{n:'BODY SLAM',t:'NORMAL',p:75,u:false},{n:'HYPER VOICE',t:'NORMAL',p:178,u:true}]},
+  {id:52, gen:1,name:'MEOWTH',    hp:100,types:['NORMAL'],moves:[{n:'SCRATCH',t:'NORMAL',p:45,u:false},{n:'PAY DAY',t:'NORMAL',p:60,u:false},{n:'BITE',t:'NORMAL',p:55,u:false},{n:'NIGHT SLASH',t:'NORMAL',p:168,u:true}]},
+  {id:54, gen:1,name:'PSYDUCK',   hp:115,types:['WATER'],moves:[{n:'WATER GUN',t:'WATER',p:60,u:false},{n:'CONFUSION',t:'PSYCHIC',p:70,u:false},{n:'DISABLE',t:'NORMAL',p:35,u:false},{n:'HYDRO PUMP',t:'WATER',p:178,u:true}]},
+  {id:58, gen:1,name:'GROWLITHE', hp:125,types:['FIRE'],moves:[{n:'EMBER',t:'FIRE',p:55,u:false},{n:'BITE',t:'NORMAL',p:55,u:false},{n:'FLAMETHROWER',t:'FIRE',p:85,u:false},{n:'FLARE BLITZ',t:'FIRE',p:180,u:true}]},
+  {id:59, gen:1,name:'ARCANINE',  hp:148,types:['FIRE'],moves:[{n:'FLARE BLITZ',t:'FIRE',p:100,u:false},{n:'EXTREME SPEED',t:'NORMAL',p:70,u:false},{n:'CRUNCH',t:'NORMAL',p:75,u:false},{n:'FIRE BLAST',t:'FIRE',p:185,u:true}]},
+  {id:63, gen:1,name:'ABRA',      hp:100,types:['PSYCHIC'],moves:[{n:'TELEPORT',t:'PSYCHIC',p:30,u:false},{n:'CONFUSION',t:'PSYCHIC',p:70,u:false},{n:'PSYBEAM',t:'PSYCHIC',p:80,u:false},{n:'PSYCHIC',t:'PSYCHIC',p:185,u:true}]},
+  {id:65, gen:1,name:'ALAKAZAM',  hp:125,types:['PSYCHIC'],moves:[{n:'PSYBEAM',t:'PSYCHIC',p:80,u:false},{n:'FUTURE SIGHT',t:'PSYCHIC',p:95,u:false},{n:'SHADOW BALL',t:'GHOST',p:75,u:false},{n:'PSYCHIC',t:'PSYCHIC',p:195,u:true}]},
+  {id:66, gen:1,name:'MACHOP',    hp:120,types:['FIGHTING'],moves:[{n:'KARATE CHOP',t:'FIGHTING',p:55,u:false},{n:'LOW KICK',t:'FIGHTING',p:60,u:false},{n:'SEISMIC TOSS',t:'NORMAL',p:65,u:false},{n:'DYNAMIC PUNCH',t:'FIGHTING',p:175,u:true}]},
+  {id:74, gen:1,name:'GEODUDE',   hp:115,types:['NORMAL'],moves:[{n:'TACKLE',t:'NORMAL',p:50,u:false},{n:'ROCK THROW',t:'NORMAL',p:65,u:false},{n:'MAGNITUDE',t:'NORMAL',p:75,u:false},{n:'EXPLOSION',t:'NORMAL',p:180,u:true}]},
+  {id:79, gen:1,name:'SLOWPOKE',  hp:145,types:['WATER','PSYCHIC'],moves:[{n:'WATER GUN',t:'WATER',p:60,u:false},{n:'CONFUSION',t:'PSYCHIC',p:70,u:false},{n:'AMNESIA',t:'PSYCHIC',p:40,u:false},{n:'PSYCHIC',t:'PSYCHIC',p:178,u:true}]},
+  {id:88, gen:1,name:'GRIMER',    hp:130,types:['POISON'],moves:[{n:'POUND',t:'NORMAL',p:45,u:false},{n:'SLUDGE',t:'POISON',p:65,u:false},{n:'MINIMIZE',t:'NORMAL',p:30,u:false},{n:'GUNK SHOT',t:'POISON',p:175,u:true}]},
+  {id:90, gen:1,name:'SHELLDER',  hp:108,types:['WATER'],moves:[{n:'TACKLE',t:'NORMAL',p:45,u:false},{n:'WATER GUN',t:'WATER',p:60,u:false},{n:'ICE SHARD',t:'ICE',p:65,u:false},{n:'BLIZZARD',t:'ICE',p:178,u:true}]},
+  {id:94, gen:1,name:'GENGAR',    hp:130,types:['GHOST','POISON'],moves:[{n:'SHADOW BALL',t:'GHOST',p:95,u:false},{n:'HEX',t:'GHOST',p:75,u:false},{n:'SLUDGE WAVE',t:'POISON',p:85,u:false},{n:'DARK PULSE',t:'GHOST',p:175,u:true}]},
+  {id:104,gen:1,name:'CUBONE',    hp:110,types:['NORMAL'],moves:[{n:'BONE CLUB',t:'NORMAL',p:60,u:false},{n:'HEADBUTT',t:'NORMAL',p:70,u:false},{n:'BONEMERANG',t:'NORMAL',p:80,u:false},{n:'BONE RUSH',t:'NORMAL',p:170,u:true}]},
+  {id:113,gen:1,name:'CHANSEY',   hp:200,types:['NORMAL'],moves:[{n:'POUND',t:'NORMAL',p:45,u:false},{n:'DOUBLESLAP',t:'NORMAL',p:55,u:false},{n:'EGG BOMB',t:'NORMAL',p:85,u:false},{n:'SOFTBOILED',t:'NORMAL',p:175,u:true}]},
+  {id:116,gen:1,name:'HORSEA',    hp:100,types:['WATER'],moves:[{n:'WATER GUN',t:'WATER',p:55,u:false},{n:'SMOKESCREEN',t:'NORMAL',p:35,u:false},{n:'BUBBLE BEAM',t:'WATER',p:70,u:false},{n:'HYDRO PUMP',t:'WATER',p:175,u:true}]},
+  {id:123,gen:1,name:'SCYTHER',   hp:130,types:['BUG'],moves:[{n:'WING ATTACK',t:'NORMAL',p:60,u:false},{n:'SLASH',t:'NORMAL',p:70,u:false},{n:'AGILITY',t:'NORMAL',p:40,u:false},{n:'X-SCISSOR',t:'BUG',p:178,u:true}]},
+  {id:129,gen:1,name:'MAGIKARP',  hp:80, types:['WATER'],moves:[{n:'SPLASH',t:'NORMAL',p:5,u:false},{n:'TACKLE',t:'NORMAL',p:35,u:false},{n:'FLAIL',t:'NORMAL',p:55,u:false},{n:'HYDRO PUMP',t:'WATER',p:150,u:true}]},
+  {id:130,gen:1,name:'GYARADOS',  hp:158,types:['WATER'],moves:[{n:'WATERFALL',t:'WATER',p:90,u:false},{n:'BITE',t:'NORMAL',p:60,u:false},{n:'DRAGON RAGE',t:'DRAGON',p:85,u:false},{n:'HYPER BEAM',t:'NORMAL',p:190,u:true}]},
+  {id:131,gen:1,name:'LAPRAS',    hp:165,types:['WATER','ICE'],moves:[{n:'ICE BEAM',t:'ICE',p:90,u:false},{n:'SURF',t:'WATER',p:85,u:false},{n:'BODY SLAM',t:'NORMAL',p:60,u:false},{n:'BLIZZARD',t:'ICE',p:185,u:true}]},
+  {id:132,gen:1,name:'DITTO',     hp:120,types:['NORMAL'],moves:[{n:'TRANSFORM',t:'NORMAL',p:50,u:false},{n:'POUND',t:'NORMAL',p:45,u:false},{n:'COPYCAT',t:'NORMAL',p:65,u:false},{n:'METRONOME',t:'NORMAL',p:170,u:true}]},
+  {id:133,gen:1,name:'EEVEE',     hp:115,types:['NORMAL'],moves:[{n:'TACKLE',t:'NORMAL',p:45,u:false},{n:'BITE',t:'NORMAL',p:55,u:false},{n:'QUICK ATTACK',t:'NORMAL',p:50,u:false},{n:'LAST RESORT',t:'NORMAL',p:175,u:true}]},
+  {id:136,gen:1,name:'FLAREON',   hp:138,types:['FIRE'],moves:[{n:'FIRE SPIN',t:'FIRE',p:65,u:false},{n:'BITE',t:'NORMAL',p:60,u:false},{n:'FLAMETHROWER',t:'FIRE',p:90,u:false},{n:'FLARE BLITZ',t:'FIRE',p:185,u:true}]},
+  {id:143,gen:1,name:'SNORLAX',   hp:180,types:['NORMAL'],moves:[{n:'BODY SLAM',t:'NORMAL',p:85,u:false},{n:'CRUNCH',t:'NORMAL',p:80,u:false},{n:'EARTHQUAKE',t:'NORMAL',p:100,u:false},{n:'GIGA IMPACT',t:'NORMAL',p:200,u:true}]},
+  {id:147,gen:1,name:'DRATINI',   hp:110,types:['DRAGON'],moves:[{n:'WRAP',t:'NORMAL',p:40,u:false},{n:'DRAGON RAGE',t:'DRAGON',p:65,u:false},{n:'TWISTER',t:'DRAGON',p:75,u:false},{n:'OUTRAGE',t:'DRAGON',p:175,u:true}]},
+  {id:149,gen:1,name:'DRAGONITE', hp:160,types:['DRAGON'],moves:[{n:'DRAGON CLAW',t:'DRAGON',p:95,u:false},{n:'OUTRAGE',t:'DRAGON',p:110,u:false},{n:'FIRE PUNCH',t:'FIRE',p:75,u:false},{n:'HYPER BEAM',t:'NORMAL',p:195,u:true}]},
+  {id:150,gen:1,name:'MEWTWO',    hp:170,types:['PSYCHIC'],moves:[{n:'PSYCHIC',t:'PSYCHIC',p:105,u:false},{n:'PSYSTRIKE',t:'PSYCHIC',p:115,u:false},{n:'AURA SPHERE',t:'NORMAL',p:80,u:false},{n:'PSYCH BOOST',t:'PSYCHIC',p:210,u:true}]},
+  {id:151,gen:1,name:'MEW',       hp:155,types:['PSYCHIC'],moves:[{n:'POUND',t:'NORMAL',p:60,u:false},{n:'PSYCHIC',t:'PSYCHIC',p:95,u:false},{n:'ANCIENT POWER',t:'NORMAL',p:80,u:false},{n:'TRANSFORM',t:'NORMAL',p:190,u:true}]},
+
+  // ═══════════════ GEN 2 (152-251) ═══════════════
+  {id:152,gen:2,name:'CHIKORITA', hp:110,types:['GRASS'],moves:[{n:'TACKLE',t:'NORMAL',p:45,u:false},{n:'RAZOR LEAF',t:'GRASS',p:70,u:false},{n:'REFLECT',t:'NORMAL',p:35,u:false},{n:'SOLAR BEAM',t:'GRASS',p:175,u:true}]},
+  {id:155,gen:2,name:'CYNDAQUIL', hp:112,types:['FIRE'],moves:[{n:'TACKLE',t:'NORMAL',p:45,u:false},{n:'EMBER',t:'FIRE',p:60,u:false},{n:'QUICK ATTACK',t:'NORMAL',p:50,u:false},{n:'ERUPTION',t:'FIRE',p:180,u:true}]},
+  {id:158,gen:2,name:'TOTODILE',  hp:115,types:['WATER'],moves:[{n:'SCRATCH',t:'NORMAL',p:45,u:false},{n:'WATER GUN',t:'WATER',p:60,u:false},{n:'BITE',t:'NORMAL',p:55,u:false},{n:'HYDRO CANNON',t:'WATER',p:178,u:true}]},
+  {id:160,gen:2,name:'FERALIGATR',hp:152,types:['WATER'],moves:[{n:'CRUNCH',t:'NORMAL',p:80,u:false},{n:'WATERFALL',t:'WATER',p:90,u:false},{n:'ICE PUNCH',t:'ICE',p:75,u:false},{n:'HYDRO CANNON',t:'WATER',p:192,u:true}]},
+  {id:161,gen:2,name:'SENTRET',   hp:100,types:['NORMAL'],moves:[{n:'TACKLE',t:'NORMAL',p:40,u:false},{n:'QUICK ATTACK',t:'NORMAL',p:50,u:false},{n:'SLASH',t:'NORMAL',p:65,u:false},{n:'HYPER VOICE',t:'NORMAL',p:168,u:true}]},
+  {id:163,gen:2,name:'HOOTHOOT',  hp:108,types:['NORMAL'],moves:[{n:'PECK',t:'NORMAL',p:45,u:false},{n:'CONFUSION',t:'PSYCHIC',p:65,u:false},{n:'HYPNOSIS',t:'PSYCHIC',p:35,u:false},{n:'SKY ATTACK',t:'NORMAL',p:172,u:true}]},
+  {id:172,gen:2,name:'PICHU',     hp:90, types:['ELECTRIC'],moves:[{n:'THUNDER SHOCK',t:'ELECTRIC',p:45,u:false},{n:'CHARM',t:'NORMAL',p:30,u:false},{n:'SWEET KISS',t:'NORMAL',p:25,u:false},{n:'THUNDER',t:'ELECTRIC',p:165,u:true}]},
+  {id:175,gen:2,name:'TOGEPI',    hp:95, types:['NORMAL'],moves:[{n:'GROWL',t:'NORMAL',p:25,u:false},{n:'METRONOME',t:'NORMAL',p:55,u:false},{n:'SWEET KISS',t:'NORMAL',p:30,u:false},{n:'DAZZLING GLEAM',t:'NORMAL',p:168,u:true}]},
+  {id:179,gen:2,name:'MAREEP',    hp:108,types:['ELECTRIC'],moves:[{n:'TACKLE',t:'NORMAL',p:45,u:false},{n:'THUNDER SHOCK',t:'ELECTRIC',p:55,u:false},{n:'COTTON SPORE',t:'NORMAL',p:35,u:false},{n:'THUNDER',t:'ELECTRIC',p:175,u:true}]},
+  {id:183,gen:2,name:'MARILL',    hp:130,types:['WATER'],moves:[{n:'TACKLE',t:'NORMAL',p:45,u:false},{n:'WATER GUN',t:'WATER',p:60,u:false},{n:'ROLLOUT',t:'NORMAL',p:65,u:false},{n:'HYDRO PUMP',t:'WATER',p:175,u:true}]},
+  {id:185,gen:2,name:'SUDOWOODO', hp:130,types:['NORMAL'],moves:[{n:'ROCK THROW',t:'NORMAL',p:60,u:false},{n:'MIMIC',t:'NORMAL',p:40,u:false},{n:'SLAM',t:'NORMAL',p:75,u:false},{n:'STONE EDGE',t:'NORMAL',p:178,u:true}]},
+  {id:196,gen:2,name:'ESPEON',    hp:130,types:['PSYCHIC'],moves:[{n:'CONFUSION',t:'PSYCHIC',p:70,u:false},{n:'PSYBEAM',t:'PSYCHIC',p:85,u:false},{n:'SWIFT',t:'NORMAL',p:60,u:false},{n:'PSYCHIC',t:'PSYCHIC',p:188,u:true}]},
+  {id:197,gen:2,name:'UMBREON',   hp:140,types:['GHOST'],moves:[{n:'BITE',t:'NORMAL',p:60,u:false},{n:'PURSUIT',t:'NORMAL',p:55,u:false},{n:'MEAN LOOK',t:'NORMAL',p:35,u:false},{n:'DARK PULSE',t:'GHOST',p:182,u:true}]},
+  {id:202,gen:2,name:'WOBBUFFET', hp:175,types:['PSYCHIC'],moves:[{n:'COUNTER',t:'NORMAL',p:70,u:false},{n:'MIRROR COAT',t:'PSYCHIC',p:75,u:false},{n:'CHARM',t:'NORMAL',p:35,u:false},{n:'DESTINY BOND',t:'GHOST',p:180,u:true}]},
+  {id:212,gen:2,name:'SCIZOR',    hp:140,types:['BUG'],moves:[{n:'BULLET PUNCH',t:'NORMAL',p:70,u:false},{n:'X-SCISSOR',t:'BUG',p:85,u:false},{n:'SLASH',t:'NORMAL',p:70,u:false},{n:'IRON HEAD',t:'NORMAL',p:185,u:true}]},
+  {id:214,gen:2,name:'HERACROSS', hp:145,types:['FIGHTING','BUG'],moves:[{n:'HORN ATTACK',t:'NORMAL',p:65,u:false},{n:'BRICK BREAK',t:'FIGHTING',p:80,u:false},{n:'MEGAHORN',t:'BUG',p:100,u:false},{n:'CLOSE COMBAT',t:'FIGHTING',p:190,u:true}]},
+  {id:215,gen:2,name:'SNEASEL',   hp:115,types:['GHOST'],moves:[{n:'SCRATCH',t:'NORMAL',p:50,u:false},{n:'QUICK ATTACK',t:'NORMAL',p:55,u:false},{n:'SLASH',t:'NORMAL',p:70,u:false},{n:'NIGHT SLASH',t:'GHOST',p:175,u:true}]},
+  {id:226,gen:2,name:'MANTINE',   hp:135,types:['WATER'],moves:[{n:'WATER GUN',t:'WATER',p:60,u:false},{n:'WING ATTACK',t:'NORMAL',p:65,u:false},{n:'SURF',t:'WATER',p:85,u:false},{n:'HYDRO PUMP',t:'WATER',p:178,u:true}]},
+  {id:229,gen:2,name:'HOUNDOOM',  hp:138,types:['FIRE','GHOST'],moves:[{n:'BITE',t:'NORMAL',p:60,u:false},{n:'FLAMETHROWER',t:'FIRE',p:88,u:false},{n:'CRUNCH',t:'NORMAL',p:80,u:false},{n:'FIRE BLAST',t:'FIRE',p:185,u:true}]},
+  {id:233,gen:2,name:'PORYGON2',  hp:135,types:['NORMAL'],moves:[{n:'TRI ATTACK',t:'NORMAL',p:75,u:false},{n:'PSYBEAM',t:'PSYCHIC',p:80,u:false},{n:'RECOVER',t:'NORMAL',p:40,u:false},{n:'HYPER BEAM',t:'NORMAL',p:182,u:true}]},
+  {id:237,gen:2,name:'HITMONTOP', hp:125,types:['FIGHTING'],moves:[{n:'ROLLING KICK',t:'FIGHTING',p:65,u:false},{n:'TRIPLE KICK',t:'FIGHTING',p:80,u:false},{n:'DETECT',t:'NORMAL',p:35,u:false},{n:'CLOSE COMBAT',t:'FIGHTING',p:185,u:true}]},
+  {id:241,gen:2,name:'MILTANK',   hp:155,types:['NORMAL'],moves:[{n:'TACKLE',t:'NORMAL',p:50,u:false},{n:'ROLLOUT',t:'NORMAL',p:65,u:false},{n:'BODY SLAM',t:'NORMAL',p:80,u:false},{n:'MILK DRINK',t:'NORMAL',p:175,u:true}]},
+  {id:245,gen:2,name:'SUICUNE',   hp:160,types:['WATER'],moves:[{n:'SURF',t:'WATER',p:90,u:false},{n:'ICE BEAM',t:'ICE',p:90,u:false},{n:'AURORA BEAM',t:'ICE',p:75,u:false},{n:'BLIZZARD',t:'ICE',p:190,u:true}]},
+  {id:248,gen:2,name:'TYRANITAR', hp:175,types:['NORMAL'],moves:[{n:'CRUNCH',t:'NORMAL',p:90,u:false},{n:'ROCK SLIDE',t:'NORMAL',p:85,u:false},{n:'EARTHQUAKE',t:'NORMAL',p:100,u:false},{n:'HYPER BEAM',t:'NORMAL',p:198,u:true}]},
+  {id:249,gen:2,name:'LUGIA',     hp:178,types:['PSYCHIC','WATER'],moves:[{n:'AEROBLAST',t:'NORMAL',p:100,u:false},{n:'SURF',t:'WATER',p:90,u:false},{n:'PSYCHIC',t:'PSYCHIC',p:105,u:false},{n:'HYDRO PUMP',t:'WATER',p:200,u:true}]},
+  {id:250,gen:2,name:'HO-OH',     hp:178,types:['FIRE'],moves:[{n:'SACRED FIRE',t:'FIRE',p:100,u:false},{n:'FIRE BLAST',t:'FIRE',p:95,u:false},{n:'AERIAL ACE',t:'NORMAL',p:80,u:false},{n:'BLAST BURN',t:'FIRE',p:200,u:true}]},
+  {id:251,gen:2,name:'CELEBI',    hp:152,types:['PSYCHIC','GRASS'],moves:[{n:'LEAF STORM',t:'GRASS',p:95,u:false},{n:'PSYCHIC',t:'PSYCHIC',p:100,u:false},{n:'RECOVER',t:'NORMAL',p:40,u:false},{n:'LEAF BLADE',t:'GRASS',p:190,u:true}]},
+
+  // ═══════════════ GEN 3 (252-386) ═══════════════
+  {id:252,gen:3,name:'TREECKO',   hp:108,types:['GRASS'],moves:[{n:'POUND',t:'NORMAL',p:45,u:false},{n:'RAZOR LEAF',t:'GRASS',p:65,u:false},{n:'QUICK ATTACK',t:'NORMAL',p:50,u:false},{n:'LEAF STORM',t:'GRASS',p:175,u:true}]},
+  {id:255,gen:3,name:'TORCHIC',   hp:110,types:['FIRE'],moves:[{n:'SCRATCH',t:'NORMAL',p:45,u:false},{n:'EMBER',t:'FIRE',p:60,u:false},{n:'PECK',t:'NORMAL',p:50,u:false},{n:'BLAST BURN',t:'FIRE',p:178,u:true}]},
+  {id:258,gen:3,name:'MUDKIP',    hp:115,types:['WATER'],moves:[{n:'TACKLE',t:'NORMAL',p:45,u:false},{n:'WATER GUN',t:'WATER',p:60,u:false},{n:'MUD-SLAP',t:'NORMAL',p:55,u:false},{n:'HYDRO CANNON',t:'WATER',p:178,u:true}]},
+  {id:254,gen:3,name:'SCEPTILE',  hp:148,types:['GRASS'],moves:[{n:'LEAF BLADE',t:'GRASS',p:90,u:false},{n:'ENERGY BALL',t:'GRASS',p:88,u:false},{n:'DRAGON CLAW',t:'DRAGON',p:80,u:false},{n:'FRENZY PLANT',t:'GRASS',p:188,u:true}]},
+  {id:257,gen:3,name:'BLAZIKEN',  hp:150,types:['FIRE','FIGHTING'],moves:[{n:'BLAZE KICK',t:'FIRE',p:90,u:false},{n:'SKY UPPERCUT',t:'FIGHTING',p:85,u:false},{n:'SLASH',t:'NORMAL',p:70,u:false},{n:'BLAST BURN',t:'FIRE',p:192,u:true}]},
+  {id:260,gen:3,name:'SWAMPERT',  hp:155,types:['WATER'],moves:[{n:'MUDDY WATER',t:'WATER',p:90,u:false},{n:'EARTHQUAKE',t:'NORMAL',p:100,u:false},{n:'ICE PUNCH',t:'ICE',p:75,u:false},{n:'HYDRO CANNON',t:'WATER',p:192,u:true}]},
+  {id:261,gen:3,name:'POOCHYENA', hp:100,types:['GHOST'],moves:[{n:'TACKLE',t:'NORMAL',p:45,u:false},{n:'BITE',t:'NORMAL',p:55,u:false},{n:'HOWL',t:'NORMAL',p:35,u:false},{n:'CRUNCH',t:'NORMAL',p:168,u:true}]},
+  {id:263,gen:3,name:'ZIGZAGOON', hp:98, types:['NORMAL'],moves:[{n:'TACKLE',t:'NORMAL',p:40,u:false},{n:'HEADBUTT',t:'NORMAL',p:60,u:false},{n:'PIN MISSILE',t:'NORMAL',p:55,u:false},{n:'GIGA IMPACT',t:'NORMAL',p:165,u:true}]},
+  {id:270,gen:3,name:'LOTAD',     hp:102,types:['WATER','GRASS'],moves:[{n:'ABSORB',t:'GRASS',p:45,u:false},{n:'WATER GUN',t:'WATER',p:60,u:false},{n:'NATURE POWER',t:'NORMAL',p:55,u:false},{n:'HYDRO PUMP',t:'WATER',p:170,u:true}]},
+  {id:278,gen:3,name:'WINGULL',   hp:100,types:['WATER'],moves:[{n:'WING ATTACK',t:'NORMAL',p:55,u:false},{n:'WATER GUN',t:'WATER',p:60,u:false},{n:'MIST',t:'NORMAL',p:30,u:false},{n:'HURRICANE',t:'NORMAL',p:172,u:true}]},
+  {id:280,gen:3,name:'RALTS',     hp:98, types:['PSYCHIC'],moves:[{n:'GROWL',t:'NORMAL',p:25,u:false},{n:'CONFUSION',t:'PSYCHIC',p:65,u:false},{n:'DOUBLE TEAM',t:'NORMAL',p:30,u:false},{n:'PSYCHIC',t:'PSYCHIC',p:172,u:true}]},
+  {id:282,gen:3,name:'GARDEVOIR', hp:140,types:['PSYCHIC'],moves:[{n:'CONFUSION',t:'PSYCHIC',p:80,u:false},{n:'CALM MIND',t:'PSYCHIC',p:50,u:false},{n:'PSYBEAM',t:'PSYCHIC',p:85,u:false},{n:'PSYCHIC',t:'PSYCHIC',p:192,u:true}]},
+  {id:286,gen:3,name:'BRELOOM',   hp:135,types:['GRASS','FIGHTING'],moves:[{n:'ABSORB',t:'GRASS',p:55,u:false},{n:'MACH PUNCH',t:'FIGHTING',p:65,u:false},{n:'SEED BOMB',t:'GRASS',p:80,u:false},{n:'FOCUS BLAST',t:'FIGHTING',p:182,u:true}]},
+  {id:289,gen:3,name:'SLAKING',   hp:195,types:['NORMAL'],moves:[{n:'SCRATCH',t:'NORMAL',p:65,u:false},{n:'YAWN',t:'NORMAL',p:35,u:false},{n:'BODY SLAM',t:'NORMAL',p:90,u:false},{n:'GIGA IMPACT',t:'NORMAL',p:205,u:true}]},
+  {id:302,gen:3,name:'SABLEYE',   hp:120,types:['GHOST'],moves:[{n:'SHADOW SNEAK',t:'GHOST',p:60,u:false},{n:'BITE',t:'NORMAL',p:60,u:false},{n:'WILL-O-WISP',t:'FIRE',p:45,u:false},{n:'SHADOW BALL',t:'GHOST',p:175,u:true}]},
+  {id:303,gen:3,name:'MAWILE',    hp:118,types:['NORMAL'],moves:[{n:'BITE',t:'NORMAL',p:60,u:false},{n:'VICE GRIP',t:'NORMAL',p:65,u:false},{n:'IRON HEAD',t:'NORMAL',p:80,u:false},{n:'PLAY ROUGH',t:'NORMAL',p:178,u:true}]},
+  {id:304,gen:3,name:'ARON',      hp:115,types:['NORMAL'],moves:[{n:'TACKLE',t:'NORMAL',p:45,u:false},{n:'METAL CLAW',t:'NORMAL',p:60,u:false},{n:'IRON HEAD',t:'NORMAL',p:75,u:false},{n:'IRON TAIL',t:'NORMAL',p:172,u:true}]},
+  {id:310,gen:3,name:'MANECTRIC', hp:132,types:['ELECTRIC'],moves:[{n:'THUNDER WAVE',t:'ELECTRIC',p:55,u:false},{n:'SPARK',t:'ELECTRIC',p:70,u:false},{n:'THUNDERBOLT',t:'ELECTRIC',p:90,u:false},{n:'THUNDER',t:'ELECTRIC',p:185,u:true}]},
+  {id:330,gen:3,name:'FLYGON',    hp:148,types:['DRAGON'],moves:[{n:'DRAGON CLAW',t:'DRAGON',p:85,u:false},{n:'EARTHQUAKE',t:'NORMAL',p:95,u:false},{n:'CRUNCH',t:'NORMAL',p:75,u:false},{n:'OUTRAGE',t:'DRAGON',p:188,u:true}]},
+  {id:334,gen:3,name:'ALTARIA',   hp:138,types:['DRAGON'],moves:[{n:'DRAGON BREATH',t:'DRAGON',p:75,u:false},{n:'AERIAL ACE',t:'NORMAL',p:70,u:false},{n:'SING',t:'NORMAL',p:30,u:false},{n:'DRAGON PULSE',t:'DRAGON',p:182,u:true}]},
+  {id:350,gen:3,name:'MILOTIC',   hp:158,types:['WATER'],moves:[{n:'WATER PULSE',t:'WATER',p:80,u:false},{n:'ICE BEAM',t:'ICE',p:90,u:false},{n:'RECOVER',t:'NORMAL',p:40,u:false},{n:'HYDRO PUMP',t:'WATER',p:192,u:true}]},
+  {id:359,gen:3,name:'ABSOL',     hp:135,types:['GHOST'],moves:[{n:'SLASH',t:'NORMAL',p:70,u:false},{n:'NIGHT SLASH',t:'GHOST',p:85,u:false},{n:'PSYCHO CUT',t:'PSYCHIC',p:80,u:false},{n:'DARK PULSE',t:'GHOST',p:182,u:true}]},
+  {id:362,gen:3,name:'GLALIE',    hp:138,types:['ICE'],moves:[{n:'ICE SHARD',t:'ICE',p:65,u:false},{n:'BITE',t:'NORMAL',p:60,u:false},{n:'CRUNCH',t:'NORMAL',p:80,u:false},{n:'BLIZZARD',t:'ICE',p:182,u:true}]},
+  {id:373,gen:3,name:'SALAMENCE', hp:165,types:['DRAGON'],moves:[{n:'DRAGON CLAW',t:'DRAGON',p:95,u:false},{n:'FLAMETHROWER',t:'FIRE',p:90,u:false},{n:'CRUNCH',t:'NORMAL',p:85,u:false},{n:'HYPER BEAM',t:'NORMAL',p:198,u:true}]},
+  {id:376,gen:3,name:'METAGROSS', hp:168,types:['PSYCHIC'],moves:[{n:'METEOR MASH',t:'NORMAL',p:100,u:false},{n:'BULLET PUNCH',t:'NORMAL',p:75,u:false},{n:'ZEN HEADBUTT',t:'PSYCHIC',p:90,u:false},{n:'HYPER BEAM',t:'NORMAL',p:200,u:true}]},
+  {id:377,gen:3,name:'REGIROCK',  hp:160,types:['NORMAL'],moves:[{n:'ROCK THROW',t:'NORMAL',p:70,u:false},{n:'ANCIENT POWER',t:'NORMAL',p:80,u:false},{n:'HAMMER ARM',t:'FIGHTING',p:90,u:false},{n:'STONE EDGE',t:'NORMAL',p:195,u:true}]},
+  {id:380,gen:3,name:'LATIAS',    hp:162,types:['DRAGON','PSYCHIC'],moves:[{n:'DRAGON BREATH',t:'DRAGON',p:80,u:false},{n:'MIST BALL',t:'PSYCHIC',p:90,u:false},{n:'PSYCHIC',t:'PSYCHIC',p:100,u:false},{n:'LUSTER PURGE',t:'PSYCHIC',p:195,u:true}]},
+  {id:381,gen:3,name:'LATIOS',    hp:162,types:['DRAGON','PSYCHIC'],moves:[{n:'DRAGON CLAW',t:'DRAGON',p:85,u:false},{n:'LUSTER PURGE',t:'PSYCHIC',p:92,u:false},{n:'PSYCHIC',t:'PSYCHIC',p:102,u:false},{n:'MIST BALL',t:'PSYCHIC',p:198,u:true}]},
+  {id:384,gen:3,name:'RAYQUAZA',  hp:185,types:['DRAGON'],moves:[{n:'DRAGON CLAW',t:'DRAGON',p:95,u:false},{n:'OUTRAGE',t:'DRAGON',p:112,u:false},{n:'FLAMETHROWER',t:'FIRE',p:90,u:false},{n:'HYPER BEAM',t:'NORMAL',p:210,u:true}]},
+  {id:385,gen:3,name:'JIRACHI',   hp:155,types:['PSYCHIC'],moves:[{n:'CONFUSION',t:'PSYCHIC',p:80,u:false},{n:'IRON HEAD',t:'NORMAL',p:85,u:false},{n:'WISH',t:'NORMAL',p:45,u:false},{n:'DOOM DESIRE',t:'NORMAL',p:195,u:true}]},
+  {id:386,gen:3,name:'DEOXYS',    hp:158,types:['PSYCHIC'],moves:[{n:'PSYCHO BOOST',t:'PSYCHIC',p:100,u:false},{n:'PSYCHIC',t:'PSYCHIC',p:105,u:false},{n:'ZEN HEADBUTT',t:'PSYCHIC',p:90,u:false},{n:'HYPER BEAM',t:'NORMAL',p:205,u:true}]},
+];
+
+const spr=id=>`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${id}.png`;
+
+let selId=null,player=null,enemy=null,pHP,eHP,pUlt,eUlt,pTurn,active;
+let randSpinTimeoutGlobal=null;
+
+// ─── SELECTION GRID ───
+const GEN_LABELS={
+  1:{label:'GENERATION I',color:'#FF6B35',range:'#001 — #151 • Kanto',
+     logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Pokemon_Red_and_Blue_Versions_logo.png/320px-Pokemon_Red_and_Blue_Versions_logo.png'},
+  2:{label:'GENERATION II',color:'#66BB6A',range:'#152 — #251 • Johto',
+     logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Pokemon_GS_logo.png/320px-Pokemon_GS_logo.png'},
+  3:{label:'GENERATION III',color:'#AB47BC',range:'#252 — #386 • Hoenn',
+     logo:'https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Pokemon_Ruby_and_Sapphire_logo.png/320px-Pokemon_Ruby_and_Sapphire_logo.png'},
+};
+let currentGen='all';
+
+function buildSel(genFilter='all'){
+  currentGen=genFilter;
+  const g=document.getElementById('poke-grid'); g.innerHTML='';
+  // sort by pokedex id
+  const sorted=[...DEX].sort((a,b)=>a.id-b.id);
+  const filtered=genFilter==='all'?sorted:sorted.filter(p=>p.gen===genFilter);
+  document.getElementById('poke-count').textContent=filtered.length+' بوكيمون';
+
+  let lastGen=null;
+  filtered.forEach(p=>{
+    // Gen divider
+    if(genFilter==='all' && p.gen!==lastGen){
+      const gl=GEN_LABELS[p.gen];
+      const div=document.createElement('div');
+      div.className='gen-divider';
+      div.style.color=gl.color;
+      div.innerHTML=`
+        <div class="gen-divider-line"></div>
+        <div class="gen-divider-badge">
+          <img class="gen-divider-logo" src="${gl.logo}" alt="Gen ${p.gen}" onerror="this.style.display='none'">
+          <div>
+            <div class="gen-divider-text">${gl.label}</div>
+            <div class="gen-divider-num">${gl.range}</div>
+          </div>
+        </div>
+        <div class="gen-divider-line"></div>`;
+      g.appendChild(div);
+      lastGen=p.gen;
+    }
+    const cardIdx=g.querySelectorAll('.poke-card').length;
+    const c=document.createElement('div'); c.className='poke-card'; c.id='card-'+p.id; c.onclick=()=>selPoke(p.id);
+    c.style.animationDelay=(cardIdx*30)+'ms';
+    c.innerHTML=`<img class="poke-img" src="${spr(p.id)}" loading="lazy">
+      <span class="poke-name">#${p.id} ${p.name}</span>
+      ${p.types.map(t=>`<span class="tbadge" style="background:${TC[t]}22;color:${TC[t]};border:1px solid ${TC[t]}44">${t}</span>`).join('')}
+      <div class="poke-stat">HP ${p.hp}</div>`;
+    g.appendChild(c);
+  });
+}
+
+function filterGen(gen,btn){
+  document.querySelectorAll('.gen-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const prevSel=selId;
+  buildSel(gen);
+  if(prevSel){
+    const card=document.getElementById('card-'+prevSel);
+    if(card) card.classList.add('sel');
+  }
+  switchGenBg(gen);
+}
+
+function switchGenBg(gen){
+  // water layer — only for 'all'
+  const wl=document.getElementById('water-layer');
+  if(wl) wl.classList.toggle('show', gen==='all');
+
+  // gen backgrounds — only show the matching one, nothing for 'all' (has water scene instead)
+  [1,2,3].forEach(g=>{
+    const el=document.getElementById('gbg-'+g);
+    if(el) el.classList.toggle('show', g===gen);
+  });
+  // gbg-all: keep hidden always (water-layer replaces it)
+  const gbgAll=document.getElementById('gbg-all');
+  if(gbgAll) gbgAll.classList.remove('show');
+
+  // silhouettes — hide all first
+  document.querySelectorAll('.gen-silhouette').forEach(s=>s.classList.remove('show'));
+  // for 'all': NO silhouettes (pikachu scene is enough)
+  if(gen!=='all'){
+    ['a','b','c'].forEach(l=>{
+      const el=document.getElementById('sil-'+gen+l);
+      if(el){el.classList.add('show');el.style.opacity='';}
+    });
+  }
+}
+
+function selPoke(id){
+  selId=id;
+  // stay on current gen tab — just highlight the card
+  document.querySelectorAll('.poke-card').forEach(c=>c.classList.remove('sel'));
+  const card=document.getElementById('card-'+id);
+  if(card) card.classList.add('sel');
+  const p=DEX.find(x=>x.id===id);
+  document.getElementById('sel-info').textContent=`✓ اخترت #${p.id} ${p.name}`;
+  document.getElementById('start-btn').disabled=false;
+}
+
+// ─── RANDOM SELECTION (tab cycling) ───
+let randTimeout=null, randSpinTimeout=null;
+
+function openFlower(){
+  // Pick a random pokemon and gen
+  const chosen = DEX[Math.floor(Math.random()*DEX.length)];
+  startRandomSpin(chosen);
+}
+
+function startRandomSpin(chosen){
+  if(randSpinTimeout) clearTimeout(randSpinTimeout);
+
+  // Get all gens sorted
+  const gens = [1,2,3]; // exclude 'all' tab from cycling
+  const genTabs = document.querySelectorAll('.gen-tab');
+  let step = 0;
+  const totalSteps = 8 + Math.floor(Math.random()*6); // cycle through tabs 8-14 times
+  const targetGen = chosen.gen;
+
+  // Build sequence: random tabs, ending on chosen gen
+  const sequence = [];
+  for(let i=0;i<totalSteps-1;i++) sequence.push(gens[Math.floor(Math.random()*gens.length)]);
+  sequence.push(targetGen); // always end on correct gen
+
+  document.getElementById('sel-info').textContent='🎲 جاري الاختيار العشوائي...';
+
+  function cycleTab(i){
+    if(i >= sequence.length){
+      // Final: highlight the chosen card
+      finalizeRandom(chosen);
+      return;
+    }
+    const g = sequence[i];
+    const btn = document.querySelector('.gen-tab.g-'+(g==='all'?'all':g));
+    if(btn) filterGen(g, btn);
+
+    const delay = i < sequence.length-4 ? 120 : i < sequence.length-2 ? 200 : 350;
+    randSpinTimeout = setTimeout(()=>cycleTab(i+1), delay);
+  }
+  cycleTab(0);
+}
+
+function finalizeRandom(chosen){
+  // Scroll to card
+  const card = document.getElementById('card-'+chosen.id);
+  if(card){
+    card.scrollIntoView({behavior:'smooth', block:'center'});
+    // Add spotlight effect
+    setTimeout(()=>{
+      selPoke(chosen.id);
+      card.classList.add('rand-spotlight');
+      setTimeout(()=>{
+        card.classList.remove('rand-spotlight');
+        setTimeout(startBattle, 600);
+      }, 1800);
+    }, 400);
+  } else {
+    selPoke(chosen.id);
+    setTimeout(startBattle, 800);
+  }
+}
+
+// ─── BATTLE ───
+function startBattle(){
+  player=DEX.find(x=>x.id===selId);
+  const pool=DEX.filter(x=>x.id!==selId);
+  enemy=pool[Math.floor(Math.random()*pool.length)];
+  pHP=player.hp; eHP=enemy.hp; pUlt=0; eUlt=0; pTurn=true; active=true;
+
+  document.getElementById('sel-screen').style.display='none';
+  document.getElementById('bat-screen').style.display='block';
+  document.getElementById('pspr').src=spr(player.id);
+  document.getElementById('pname').textContent=player.name;
+  document.getElementById('espr').src=spr(enemy.id);
+  document.getElementById('ename').textContent=enemy.name;
+
+  updHUD(); buildMoves();
+  document.getElementById('log').innerHTML='';
+  addLog(`⚔ ${player.name} vs ${enemy.name}! المعركة بدأت!`,'sys');
+}
+
+function updHUD(){setHP('p',pHP,player.hp);setHP('e',eHP,enemy.hp);setUlt('p',pUlt);setUlt('e',eUlt);}
+function setHP(w,cur,max){
+  const pct=Math.max(0,cur/max*100);
+  const f=document.getElementById(w+'hp-fill');
+  f.style.width=pct+'%'; f.className='hp-fill'+(pct>50?'':pct>25?' y':' r');
+  document.getElementById(w+'hp-txt').textContent=`${Math.max(0,cur)}/${max}`;
+}
+function setUlt(w,pct){
+  document.getElementById(w+'ult-fill').style.width=pct+'%';
+  document.getElementById(w+'ult-txt').textContent=pct+'%';
+}
+
+function buildMoves(){
+  const g=document.getElementById('moves-grid'); g.innerHTML='';
+  player.moves.forEach((mv,i)=>{
+    const c=TC[mv.t];
+    const b=document.createElement('button'); b.className='mbtn'; b.id='mv'+i;
+    b.style.background=mv.u?'rgba(124,77,255,.14)':`${c}1a`;
+    b.style.borderColor=mv.u?'#7C4DFF66':`${c}44`;
+    b.innerHTML=`<span class="mbtn-name" style="color:${mv.u?'#CE93D8':c}">${mv.u?'★ ':''}${mv.n}</span>
+      <div class="mbtn-meta">
+        <span class="tbadge" style="background:${c}22;color:${c};border:1px solid ${c}44;font-size:7px">${mv.t}</span>
+        <span class="mbtn-pwr" style="color:${c}">PWR ${mv.p}</span>
+      </div>${mv.u?'<span class="ult-note">ULTIMATE — يتطلب 100%</span>':''}`;
+    b.onclick=()=>doAtk(i); g.appendChild(b);
+  });
+  refMoves();
+}
+function refMoves(){player.moves.forEach((mv,i)=>{const b=document.getElementById('mv'+i);if(b)b.disabled=!pTurn||!active||(mv.u&&pUlt<100);});}
+function calcDmg(p){return Math.round(p/5*(0.85+Math.random()*.3));}
+
+function doAtk(idx){
+  if(!pTurn||!active)return;
+  const mv=player.moves[idx]; if(mv.u&&pUlt<100)return;
+  pTurn=false; refMoves();
+  const ps=document.getElementById('pspr'); ps.classList.add('lr');
+  setTimeout(()=>ps.classList.remove('lr'),440);
+  setTimeout(()=>{
+    const dmg=calcDmg(mv.p); eHP=Math.max(0,eHP-dmg);
+    if(!mv.u)pUlt=Math.min(100,pUlt+20); else pUlt=0;
+    const es=document.getElementById('espr'); es.classList.add('df');
+    setTimeout(()=>es.classList.remove('df'),520);
+    updHUD(); addLog(`⚔ ${player.name} → ${mv.n}! (-${dmg} HP)`,'dmg');
+    if(eHP<=0){setTimeout(()=>endBattle(true),900);return;}
+    document.getElementById('turn-bar').textContent='⏳ دور العدو...';
+    setTimeout(doEnemyAtk,1300);
+  },230);
+}
+
+function doEnemyAtk(){
+  if(!active)return;
+  const avail=enemy.moves.filter(m=>!m.u||eUlt>=100);
+  const mv=avail[Math.floor(Math.random()*avail.length)];
+  const es=document.getElementById('espr'); es.classList.add('ll');
+  setTimeout(()=>es.classList.remove('ll'),440);
+  setTimeout(()=>{
+    const dmg=calcDmg(mv.p); pHP=Math.max(0,pHP-dmg);
+    if(!mv.u)eUlt=Math.min(100,eUlt+20); else eUlt=0;
+    const ps=document.getElementById('pspr'); ps.classList.add('df');
+    setTimeout(()=>ps.classList.remove('df'),520);
+    updHUD(); addLog(`💥 ${enemy.name} → ${mv.n}! (-${dmg} HP)`,'dmg');
+    if(pHP<=0){setTimeout(()=>endBattle(false),900);return;}
+    pTurn=true; document.getElementById('turn-bar').textContent='🗡️ دورك للهجوم!'; refMoves();
+  },230);
+}
+
+function endBattle(won){
+  active=false;
+  document.getElementById('rtitle').textContent=won?'VICTORY!':'DEFEAT...';
+  document.getElementById('rtitle').className='rtitle '+(won?'win':'lose');
+  document.getElementById('rsub').textContent='WINNER: '+(won?player.name:enemy.name);
+  document.getElementById('rspr').src=spr(won?player.id:enemy.id);
+  document.getElementById('rdesc').textContent=won?'🏆 أحسنت! فزت المعركة!':'💀 خسرت... حاول مرة أخرى!';
+  document.getElementById('rov').classList.add('show');
+}
+
+function addLog(txt,cls=''){
+  const log=document.getElementById('log');
+  const el=document.createElement('div'); el.className=`le new ${cls}`; el.textContent=txt;
+  log.appendChild(el); log.scrollTop=log.scrollHeight;
+  setTimeout(()=>el.classList.remove('new'),400);
+}
+
+function resetGame(){
+  document.getElementById('rov').classList.remove('show');
+  document.getElementById('bat-screen').style.display='none';
+  document.getElementById('sel-screen').style.display='block';
+  selId=null; document.getElementById('start-btn').disabled=true;
+  document.getElementById('sel-info').textContent='اختر بوكيمون للقتال أو استخدم الاختيار العشوائي';
+  // restore the last active gen tab
+  buildSel(currentGen);
+  switchGenBg(currentGen);
+}
+
+buildSel();
+switchGenBg('all');
+// Generate stars
+(function(){
+  const layer=document.getElementById('stars-layer');
+  if(!layer)return;
+  for(let i=0;i<60;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    const size=Math.random()*2.5+1;
+    s.style.cssText=`width:${size}px;height:${size}px;top:${Math.random()*58}%;left:${Math.random()*100}%;--d:${2+Math.random()*4}s;--delay:${Math.random()*4}s`;
+    layer.appendChild(s);
+  }
+})();
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js')
+      .then(()=>console.log('PWA ready!'))
+      .catch(e=>console.log('SW error:',e));
+  });
+}
+</script>
+</body>
+</html>

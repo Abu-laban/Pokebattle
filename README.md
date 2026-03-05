@@ -1,28 +1,70 @@
-# 🎮 PokéBattle
-
-لعبة معارك بوكيمون متكاملة تعمل في المتصفح كـ PWA
-
-## 🌟 المميزات
-- 173 بوكيمون من 7 أجيال
-- نظام Type Effectiveness الرسمي + STAB
-- برج المعارك (6 بوكيمون، معارك متتالية)
-- نظام XP والمستويات والإنجازات
-- تحديات يومية
-- أصوات وموسيقى
-- يعمل بدون انترنت (PWA)
-
-## 🚀 النشر على GitHub Pages
-
-1. ارفع جميع الملفات إلى مستودع GitHub
-2. اذهب إلى Settings → Pages
-3. اختر Branch: main, Folder: / (root)
-4. الموقع سيكون جاهزاً على: `https://username.github.io/repo-name/`
-
-## 📁 هيكل الملفات
-```
-index.html   ← اللعبة الرئيسية
-manifest.json ← PWA manifest
-sw.js         ← Service Worker
-.nojekyll     ← لتعطيل Jekyll في GitHub Pages
-README.md     ← هذا الملف
-```
+{
+  "name": "PokéBattle",
+  "short_name": "PokéBattle",
+  "description": "لعبة معارك بوكيمون 2v2 بالعربية",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a1a",
+  "theme_color": "#7C4DFF",
+  "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "icons/icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "icons/screenshot.png",
+      "sizes": "540x720",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["games", "entertainment"]
+}

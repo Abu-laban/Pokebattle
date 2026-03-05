@@ -1,70 +1,16 @@
-{
-  "name": "PokéBattle",
-  "short_name": "PokéBattle",
-  "description": "لعبة معارك بوكيمون 2v2 بالعربية",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#0a0a1a",
-  "theme_color": "#7C4DFF",
-  "orientation": "portrait-primary",
-  "lang": "ar",
-  "dir": "rtl",
-  "icons": [
-    {
-      "src": "icons/icon-72.png",
-      "sizes": "72x72",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-96.png",
-      "sizes": "96x96",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-128.png",
-      "sizes": "128x128",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-144.png",
-      "sizes": "144x144",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-152.png",
-      "sizes": "152x152",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-384.png",
-      "sizes": "384x384",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "icons/screenshot.png",
-      "sizes": "540x720",
-      "type": "image/png"
-    }
-  ],
-  "categories": ["games", "entertainment"]
-}
+# ⚡ PokéBattle
+
+لعبة معارك بوكيمون 2v2 كاملة بالعربية — 809 بوكيمون من الجيل 1 إلى 7
+
+## 🎮 الميزات
+- معارك 2 ضد 2
+- 809 بوكيمون (الجيل 1-7)
+- برج المعارك
+- تأثيرات بصرية لكل نوع
+- PWA — تثبيت على الجهاز
+
+## 🚀 النشر
+- GitHub Pages: `https://USERNAME.github.io/pokebattle`
+
+## 📱 التثبيت
+افتح الرابط في المتصفح واضغط "إضافة إلى الشاشة الرئيسية"

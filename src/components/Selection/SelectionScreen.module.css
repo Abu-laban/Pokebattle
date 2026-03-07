@@ -1,0 +1,150 @@
+.screen { animation: cardReveal .3s ease; }
+
+/* Profile bar */
+.profileBar {
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,.04); border-radius: 12px;
+  padding: 8px 14px; margin-bottom: 14px;
+  border: 1px solid rgba(255,255,255,.07);
+}
+.profileLeft  { display: flex; align-items: center; gap: 10px; flex: 1; }
+.profileRight { font-size: 11px; color: rgba(255,255,255,.5); }
+.levelBadge {
+  font-family: 'Press Start 2P', monospace; font-size: 9px;
+  color: #FFD600; white-space: nowrap;
+}
+.xpBar   { flex: 1; height: 6px; background: rgba(255,255,255,.1); border-radius: 3px; overflow: hidden; }
+.xpFill  { height: 100%; background: linear-gradient(90deg, #FFD600, #FF6B35); border-radius: 3px; transition: width .4s; }
+
+/* Gen tabs */
+.genTabs {
+  display: flex; gap: 8px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 16px;
+}
+.genTab {
+  position: relative; overflow: hidden; cursor: pointer;
+  background: rgba(255,255,255,.04);
+  border: 2px solid rgba(255,255,255,.1);
+  border-radius: 16px; padding: 8px 12px;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  min-width: 68px;
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+}
+.genTab:hover { transform: translateY(-4px) scale(1.04); border-color: rgba(255,255,255,.25); }
+.genIcon  { font-size: 18px; }
+.genLabel { font-family: 'Press Start 2P', monospace; font-size: 5px; color: rgba(255,255,255,.5); }
+.genSub   { font-size: 9px; color: rgba(255,255,255,.3); }
+.genTab.active { transform: translateY(-4px) scale(1.05); }
+.genTab.active .genLabel { color: #fff; }
+.genTab.active .genSub   { color: rgba(255,255,255,.6); }
+.g-all.active  { background: linear-gradient(145deg,rgba(255,214,0,.18),rgba(255,107,53,.14)); border-color: #FFD60066; }
+.g-1.active    { background: linear-gradient(145deg,rgba(255,107,53,.18),rgba(236,64,122,.14)); border-color: #FF6B3566; }
+.g-2.active    { background: linear-gradient(145deg,rgba(102,187,106,.18),rgba(79,195,247,.14)); border-color: #66BB6A66; }
+.g-3.active    { background: linear-gradient(145deg,rgba(124,77,255,.18),rgba(224,64,251,.14)); border-color: #7C4DFF66; }
+.g-4.active    { background: linear-gradient(145deg,rgba(79,195,247,.18),rgba(41,182,246,.14)); border-color: #29B6F666; }
+.g-5.active    { background: linear-gradient(145deg,rgba(239,83,80,.18),rgba(255,167,38,.14)); border-color: #EF535066; }
+.g-6.active    { background: linear-gradient(145deg,rgba(236,64,122,.18),rgba(156,39,176,.14)); border-color: #EC407A66; }
+.g-7.active    { background: linear-gradient(145deg,rgba(255,193,7,.18),rgba(255,152,0,.14)); border-color: #FFC10766; }
+
+/* Search */
+.searchWrap { margin-bottom: 10px; }
+.search {
+  width: 100%; padding: 10px 14px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px; color: #fff; font-size: 13px;
+  outline: none; transition: border-color .2s;
+}
+.search:focus { border-color: rgba(79,195,247,.5); }
+.search::placeholder { color: rgba(255,255,255,.3); }
+
+/* Info bar */
+.infoBar {
+  text-align: center; font-size: 12px;
+  color: rgba(255,255,255,.45); margin-bottom: 12px; min-height: 18px;
+}
+
+/* Team bar */
+.teamBar {
+  display: flex; gap: 8px; justify-content: center;
+  margin-bottom: 14px; flex-wrap: wrap;
+}
+.teamSlot {
+  position: relative;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 12px; padding: 6px;
+}
+.removeBtn {
+  position: absolute; top: -6px; right: -6px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #EF5350; border: none; color: #fff;
+  font-size: 8px; cursor: pointer; line-height: 18px; text-align: center;
+}
+
+/* Action buttons */
+.actions  { display: flex; gap: 10px; margin-bottom: 18px; }
+.startBtn {
+  flex: 2; padding: 14px;
+  background: linear-gradient(135deg, rgba(79,195,247,.2), rgba(79,195,247,.08));
+  border: 2px solid rgba(79,195,247,.4);
+  border-radius: 14px; color: #4FC3F7;
+  font-family: 'Press Start 2P', monospace; font-size: 9px;
+  cursor: pointer; transition: all .25s; letter-spacing: 1px;
+}
+.startBtn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(79,195,247,.35), rgba(79,195,247,.15));
+  transform: translateY(-2px); box-shadow: 0 8px 20px rgba(79,195,247,.3);
+}
+.startBtn:disabled { opacity: .3; cursor: not-allowed; }
+.towerBtn {
+  flex: 1; padding: 14px;
+  background: linear-gradient(135deg, rgba(255,214,0,.15), rgba(255,107,53,.1));
+  border: 2px solid rgba(255,214,0,.35);
+  border-radius: 14px; color: #FFD600;
+  font-family: 'Press Start 2P', monospace; font-size: 8px;
+  cursor: pointer; transition: all .25s;
+}
+.towerBtn:hover { background: rgba(255,214,0,.25); transform: translateY(-2px); }
+
+/* Pokemon grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+/* Pokemon card */
+.card {
+  background: rgba(255,255,255,.04);
+  border: 2px solid rgba(255,255,255,.07);
+  border-radius: 16px; padding: 12px 8px 8px;
+  text-align: center; cursor: pointer;
+  transition: all .28s cubic-bezier(.34,1.56,.64,1);
+  opacity: 0; transform: translateY(22px);
+  animation: cardReveal .4s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+@keyframes cardReveal {
+  to { opacity: 1; transform: translateY(0); }
+}
+.card:hover:not(.disabled) {
+  transform: translateY(-6px) scale(1.04);
+  border-color: rgba(255,255,255,.22);
+  box-shadow: 0 12px 35px rgba(0,0,0,.5);
+}
+.card.sel {
+  border-color: #FFD600;
+  box-shadow: 0 0 25px rgba(255,214,0,.45);
+  background: rgba(255,214,0,.07);
+}
+.card.disabled { opacity: .35; cursor: not-allowed; }
+
+.cardImg { margin: 0 auto 6px; transition: transform .3s; }
+.card:hover .cardImg { transform: scale(1.1) translateY(-3px); }
+.cardImgPlaceholder { width: 80px; height: 80px; margin: 0 auto 6px; }
+.cardName {
+  font-family: 'Press Start 2P', monospace; font-size: 5px;
+  color: #fff; margin-bottom: 4px; display: block;
+}
+.cardTypes { display: flex; gap: 2px; justify-content: center; margin-bottom: 3px; }
+.cardHp    { font-size: 8px; color: rgba(255,255,255,.3); }

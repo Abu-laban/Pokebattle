@@ -1,0 +1,120 @@
+.screen { animation: cardReveal .3s ease; }
+
+/* Tower bar */
+.towerBar {
+  display: flex; justify-content: space-between; align-items: center;
+  background: linear-gradient(135deg, rgba(255,214,0,.12), rgba(255,107,53,.08));
+  border: 1px solid rgba(255,214,0,.25); border-radius: 12px;
+  padding: 8px 16px; margin-bottom: 10px;
+  font-family: 'Press Start 2P', monospace; font-size: 8px; color: #FFD600;
+}
+.streak { color: rgba(255,255,255,.6); }
+.streak strong { color: #FFD600; }
+
+/* Arena */
+.arena {
+  border-radius: 24px; overflow: hidden; position: relative;
+  background: linear-gradient(180deg, #0d1f3c 0%, #071428 100%);
+  border: 1px solid rgba(255,255,255,.08);
+  margin-bottom: 10px; box-shadow: 0 8px 40px rgba(0,0,0,.6);
+  transition: box-shadow .5s ease;
+}
+.arenaGlow {
+  position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(ellipse at 25% 60%, rgba(255,107,53,.1), transparent 50%),
+    radial-gradient(ellipse at 75% 40%, rgba(79,195,247,.1), transparent 50%);
+}
+.fighters {
+  position: relative; z-index: 2; padding: 18px;
+  display: flex; justify-content: space-between; align-items: stretch; gap: 12px;
+}
+
+.side { display: flex; flex-direction: column; gap: 8px; flex: 1; min-width: 0; }
+.sideLabel {
+  font-family: 'Press Start 2P', monospace; font-size: 8px;
+  color: rgba(255,255,255,.4); text-align: center; margin-bottom: 2px;
+}
+.enemyLabel { color: rgba(255,107,53,.6); }
+
+.vs {
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Press Start 2P', monospace; font-size: 14px;
+  color: rgba(255,255,255,.2); padding: 0 4px; flex-shrink: 0;
+}
+
+/* Turn bar */
+.turnBar {
+  border-radius: 12px; padding: 10px 16px; text-align: center;
+  margin-bottom: 10px; font-family: 'Press Start 2P', monospace; font-size: 8px;
+  letter-spacing: 1px; border: 1px solid; display: flex; align-items: center;
+  justify-content: center; gap: 10px; transition: all .3s;
+}
+.playerTurn {
+  color: #4FC3F7; background: rgba(79,195,247,.06);
+  border-color: rgba(79,195,247,.18);
+}
+.enemyTurn {
+  color: #FF6B35; background: rgba(255,107,53,.06);
+  border-color: rgba(255,107,53,.18); animation: enemyPulse 1s ease infinite;
+}
+@keyframes enemyPulse {
+  0%,100% { box-shadow: 0 0 0 rgba(255,107,53,0); }
+  50%      { box-shadow: 0 0 12px rgba(255,107,53,.25); }
+}
+.dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor; opacity: .5;
+  animation: dotPulse 1.5s ease infinite alternate;
+}
+@keyframes dotPulse { from { opacity: .3; } to { opacity: .9; } }
+
+/* Tower moves */
+.towerMoves {
+  background: rgba(0,0,0,.3); border-radius: 16px; padding: 14px;
+  border: 1px solid rgba(255,255,255,.07); margin-bottom: 10px;
+}
+.movesHead {
+  font-family: 'Press Start 2P', monospace; font-size: 8px;
+  color: rgba(255,255,255,.5); text-align: center; margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+
+/* 2v2 dual panels */
+.dualPanels {
+  display: flex; gap: 8px; margin-bottom: 10px;
+}
+
+/* End turn button */
+.endTurnBtn {
+  width: 100%; padding: 13px; border-radius: 14px;
+  font-family: 'Press Start 2P', monospace; font-size: 10px;
+  border: 2px solid rgba(255,214,0,.2);
+  background: rgba(255,214,0,.05); color: rgba(255,214,0,.3);
+  transition: all .25s; margin-bottom: 10px; cursor: not-allowed;
+}
+.endTurnBtn.ready {
+  border-color: rgba(255,214,0,.7); background: rgba(255,214,0,.15);
+  color: #FFD600; cursor: pointer;
+  animation: endTurnPulse 1.5s ease infinite;
+}
+@keyframes endTurnPulse {
+  0%,100% { box-shadow: 0 0 0 rgba(255,214,0,0); }
+  50%      { box-shadow: 0 0 16px rgba(255,214,0,.35); }
+}
+.endTurnBtn.ready:hover { background: rgba(255,214,0,.25); transform: translateY(-2px); }
+.endTurnBtn:disabled:not(.ready) { cursor: not-allowed; }
+
+/* Retreat */
+.retreatBtn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 10px; margin-bottom: 12px;
+  background: rgba(244,67,54,.06); border: 1px solid rgba(244,67,54,.25);
+  border-radius: 12px; font-family: 'Press Start 2P', monospace; font-size: 7px;
+  color: #EF5350; cursor: pointer; transition: all .25s; letter-spacing: 1px;
+}
+.retreatBtn:hover:not(:disabled) {
+  background: rgba(244,67,54,.18); border-color: #EF5350;
+  box-shadow: 0 0 12px rgba(244,67,54,.25); transform: scale(1.01);
+}
+.retreatBtn:disabled { opacity: .3; cursor: not-allowed; }

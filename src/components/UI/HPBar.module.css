@@ -1,0 +1,7 @@
+.wrap  { display: flex; align-items: center; gap: 6px; }
+.txt   { font-size: 10px; color: rgba(255,255,255,.7); white-space: nowrap; min-width: 60px; }
+.track { flex: 1; height: 8px; background: rgba(255,255,255,.1); border-radius: 4px; overflow: hidden; }
+.fill  { height: 100%; border-radius: 4px; transition: width .4s ease, background .4s ease; }
+.green  { background: linear-gradient(90deg, #43a047, #66BB6A); }
+.yellow { background: linear-gradient(90deg, #f9a825, #FFD600); }
+.red    { background: linear-gradient(90deg, #c62828, #EF5350); box-shadow: 0 0 6px rgba(239,83,80,.5); }

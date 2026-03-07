@@ -1,0 +1,33 @@
+.log {
+  background: rgba(0,0,0,.3);
+  border-radius: 14px;
+  padding: 10px 12px;
+  height: 140px;
+  overflow-y: auto;
+  font-size: 11px;
+  line-height: 1.7;
+  border: 1px solid rgba(255,255,255,.06);
+  scroll-behavior: smooth;
+}
+.log::-webkit-scrollbar { width: 4px; }
+.log::-webkit-scrollbar-track { background: transparent; }
+.log::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 2px; }
+
+.entry {
+  padding: 1px 0;
+  color: rgba(255,255,255,.6);
+  transition: color .2s;
+  animation: entryIn .25s ease forwards;
+}
+@keyframes entryIn {
+  from { opacity: 0; transform: translateX(-6px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+
+/* Colored entry types */
+.entry.sys        { color: #4FC3F7; }
+.entry.dmg        { color: #EF9A9A; }
+.entry.death      { color: #EF5350; font-weight: 700; }
+.entry.player-atk { color: #A5D6A7; }
+.entry.enemy-atk  { color: #FFAB91; }
+.entry.heal       { color: #81C784; }

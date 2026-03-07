@@ -1,0 +1,24 @@
+{
+  "name": "pokebattle",
+  "version": "2.0.0",
+  "description": "PokéBattle — React Edition (Gen I-VII)",
+  "type": "module",
+  "scripts": {
+    "dev":     "vite",
+    "build":   "vite build",
+    "preview": "vite preview",
+    "lint":    "eslint src --ext .js,.jsx"
+  },
+  "dependencies": {
+    "react":          "^18.3.1",
+    "react-dom":      "^18.3.1",
+    "zustand":        "^5.0.2",
+    "immer":          "^10.1.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.3",
+    "eslint":               "^9.15.0",
+    "eslint-plugin-react":  "^7.37.2",
+    "vite":                 "^6.0.3"
+  }
+}

@@ -1,0 +1,45 @@
+.overlay {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.88); backdrop-filter: blur(12px);
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn .3s ease;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.box {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border: 2px solid rgba(255,255,255,.1);
+  border-radius: 28px; padding: 36px 30px;
+  text-align: center; max-width: 340px; width: 90%;
+  animation: popIn .45s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.title {
+  font-family: 'Press Start 2P', monospace; font-size: 14px;
+  margin-bottom: 18px; letter-spacing: 2px;
+}
+.win   { color: #FFD600; text-shadow: 0 0 25px rgba(255,214,0,.6); }
+.lose  { color: #EF5350; text-shadow: 0 0 25px rgba(239,83,80,.6); }
+.tower { color: #4FC3F7; text-shadow: 0 0 25px rgba(79,195,247,.6); }
+
+.sprite { margin: 0 auto 18px; }
+
+.stats {
+  display: flex; gap: 20px; justify-content: center;
+  margin: 18px 0 26px;
+  padding: 16px; background: rgba(255,255,255,.04);
+  border-radius: 16px; border: 1px solid rgba(255,255,255,.07);
+}
+
+.returnBtn {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, rgba(79,195,247,.2), rgba(79,195,247,.08));
+  border: 2px solid rgba(79,195,247,.4); border-radius: 14px;
+  color: #4FC3F7; font-family: 'Press Start 2P', monospace; font-size: 9px;
+  cursor: pointer; transition: all .25s; letter-spacing: 1px;
+}
+.returnBtn:hover {
+  background: rgba(79,195,247,.3); transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(79,195,247,.3);
+}

@@ -1,0 +1,72 @@
+.screen { animation: cardReveal .3s ease; }
+
+.header { text-align: center; margin-bottom: 20px; }
+.back {
+  float: left; background: transparent; border: 1px solid rgba(255,255,255,.2);
+  border-radius: 8px; color: rgba(255,255,255,.6); font-size: 11px;
+  padding: 6px 12px; cursor: pointer; transition: all .2s;
+}
+.back:hover { color: #fff; border-color: rgba(255,255,255,.5); }
+.title { font-family: 'Press Start 2P', monospace; font-size: 13px; color: #FFD600; margin-bottom: 6px; }
+.sub   { font-size: 12px; color: rgba(255,255,255,.4); }
+
+.slots {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px; margin-bottom: 14px;
+}
+.slot {
+  background: rgba(255,255,255,.04); border-radius: 14px; padding: 10px 6px;
+  text-align: center; position: relative;
+  border: 2px solid rgba(255,255,255,.08); min-height: 100px;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.empty { border-style: dashed; opacity: .5; justify-content: center; }
+.filled { border-color: rgba(255,214,0,.25); }
+.slotNum {
+  position: absolute; top: 5px; left: 7px;
+  font-size: 8px; color: rgba(255,255,255,.3);
+  font-family: 'Press Start 2P', monospace;
+}
+.plus { font-size: 22px; opacity: .3; }
+.emptyLabel { font-size: 8px; color: rgba(255,255,255,.2); }
+.slotName { font-family: 'Press Start 2P', monospace; font-size: 5px; color: #fff; }
+.slotHp   { font-size: 8px; color: rgba(255,255,255,.4); }
+.removeBtn {
+  position: absolute; top: 5px; right: 5px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: rgba(239,83,80,.6); border: none; color: #fff;
+  font-size: 8px; cursor: pointer;
+}
+
+.startBtn {
+  width: 100%; padding: 14px; margin-bottom: 14px;
+  background: linear-gradient(135deg, rgba(255,214,0,.2), rgba(255,107,53,.12));
+  border: 2px solid rgba(255,214,0,.4); border-radius: 14px;
+  color: #FFD600; font-family: 'Press Start 2P', monospace; font-size: 9px;
+  cursor: pointer; transition: all .25s;
+}
+.startBtn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,214,0,.3); }
+.startBtn:disabled { opacity: .3; cursor: not-allowed; }
+
+.search {
+  width: 100%; padding: 10px 14px; margin-bottom: 12px;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 12px; color: #fff; font-size: 13px; outline: none;
+}
+.search::placeholder { color: rgba(255,255,255,.3); }
+
+.grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+}
+.card {
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px; padding: 10px 6px; text-align: center;
+  cursor: pointer; transition: all .2s;
+}
+.card:hover:not(.disabled) {
+  border-color: rgba(255,255,255,.2); transform: translateY(-3px);
+}
+.card.disabled { opacity: .3; cursor: not-allowed; }
+.name  { font-family: 'Press Start 2P', monospace; font-size: 5px; color: #fff; display: block; margin: 4px 0 3px; }
+.types { display: flex; gap: 2px; justify-content: center; }

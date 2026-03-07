@@ -9,6 +9,7 @@ import { calcDmg, getEffectiveness, getMvCat } from '../engine/damage.js';
 import { addStatus, applyMoveEffect, applyEndTurnStatus,
          checkTurnStatus, STATUS_AR } from '../engine/status.js';
 import { MOVE_SECONDARY } from '../data/moveSecondary.js';
+import { getPokeAbility } from '../data/abilities.js';
 import { MOVE_EFFECTS }   from '../data/moveEffects.js';
 import { SFX, playTypeSound } from '../engine/audio.js';
 
@@ -83,7 +84,25 @@ export function useBattleEngine() {
     }
 
     const weather = useBattleStore.getState().weather.type;
-    const { dmg, mult, stab, weatherMult } = calcDmg(mv, attacker, target, weather);
+    const { dmg, mult, stab, weatherMult, abilityMult } = calcDmg(mv, attacker, target, weather);
+
+    // Absorb abilities: Water Absorb / Volt Absorb / SAP_SIPPER heal instead of damage
+    const dAb = getPokeAbility(target.poke.id);
+    if (mult === 0 && dAb &&
+        ['WATER_ABSORB','VOLT_ABSORB','SAP_SIPPER','FLASH_FIRE','LEVITATE'].includes(dAb.id)) {
+      const heal = Math.min(Math.floor(target.poke.hp * 0.25), target.poke.hp - target.hp);
+      if (heal > 0) {
+        target.hp = Math.min(target.poke.hp, target.hp + heal);
+        log(dAb.icon + ' ' + target.poke.name + ': قدرة ' + dAb.name + ' امتصت الهجوم! (+' + heal + 'HP)', 'heal');
+      }
+      myTeam[atkIdx] = attacker;
+      enTeam[targetIdx] = target;
+      store.setPField([...pField]);
+      store.setEField([...eField]);
+      syncTeams(myTeam, enTeam);
+      callback?.();
+      return;
+    }
 
     target.hp = Math.max(0, target.hp - dmg);
 
@@ -341,15 +360,29 @@ export function useBattleEngine() {
   }
 
   function handleTowerWin() {
-    const s = useBattleStore.getState();
+    // Snapshot BEFORE any setState — avoids race condition with async state
+    const snap = useBattleStore.getState();
+    const fieldIdx     = snap.pField[0] ?? 0;
+    const activeMember = snap.myTeam[fieldIdx];
+    const towerIdx     = snap.towerIdx;
+
+    // Persist HP + ULT using the already-synced myTeam snapshot
+    const savedHp  = activeMember?.hp  ?? snap.towerTeam[towerIdx]?.hp  ?? 0;
+    const savedUlt = activeMember?.ult ?? snap.towerTeam[towerIdx]?.ult ?? 0;
+
     useBattleStore.setState(s2 => ({
       towerStreak: s2.towerStreak + 1,
+      active: false,
       towerTeam: s2.towerTeam.map((t, i) =>
-        i === s2.towerIdx ? { ...t, hp: s2.myTeam[0].hp, ult: s2.myTeam[0].ult } : t
+        i === towerIdx
+          ? { ...t, hp: savedHp, ult: savedUlt }   // ULT persists between tower battles
+          : t
       ),
     }));
-    progress.gainXP(20 + useBattleStore.getState().towerStreak * 3);
-    log(`🏆 انتصرت! سلسلة: ${useBattleStore.getState().towerStreak}`, 'sys');
+
+    const newStreak = useBattleStore.getState().towerStreak;
+    progress.gainXP(20 + newStreak * 3);
+    log(`🏆 انتصرت! سلسلة: ${newStreak}`, 'sys');
     SFX.stopBGM();
     SFX.victory?.();
     setTimeout(() => useBattleStore.getState().startNextTowerBattle(), 1800);

@@ -148,3 +148,12 @@
 }
 .cardTypes { display: flex; gap: 2px; justify-content: center; margin-bottom: 3px; }
 .cardHp    { font-size: 8px; color: rgba(255,255,255,.3); }
+
+/* Ability + class meta row */
+.cardMeta {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 3px; padding: 0 2px;
+}
+.cardHp    { font-size: 8px; color: rgba(255,255,255,.3); }
+.classTag  { font-size: 11px; }
+.abilityTag { font-size: 11px; cursor: help; }

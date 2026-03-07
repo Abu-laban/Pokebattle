@@ -22,5 +22,16 @@ export const MOVE_SECONDARY = {
   'GUNK SHOT':{status:'PSN',chance:0.3},'POISON TAIL':{status:'PSN',chance:0.1},
   'SLUDGE':{status:'PSN',chance:0.3},'ACID':{status:'PSN',chance:0.1},
   'SMOG':{status:'PSN',chance:0.4},'SLUDGE DOME':{status:'PSN',chance:0.3},
+
+  // ── Confusion (CNF) ──
+  'CONFUSION':{status:'CNF',chance:0.1},'PSYBEAM':{status:'CNF',chance:0.1},
+  'SHADOW BALL':{status:'CNF',chance:0.2},'WATER PULSE':{status:'CNF',chance:0.2},
+  'DIZZY PUNCH':{status:'CNF',chance:0.2},'DYNAMIC PUNCH':{status:'CNF',chance:1.0},
+  'SIGNAL BEAM':{status:'CNF',chance:0.1},'CHATTER':{status:'CNF',chance:1.0},
+  'HURRICANE':{status:'CNF',chance:0.3},'TEETER DANCE':{status:'CNF',chance:1.0},
+  'FLATTER':{status:'CNF',chance:1.0},'SWEET KISS':{status:'CNF',chance:1.0},
+  'SUPERSONIC':{status:'CNF',chance:1.0},'CONFUSE RAY':{status:'CNF',chance:1.0},
+  'STOMP':{status:'CNF',chance:0.3},'ROCK BLAST':{status:'CNF',chance:0.1},
+  'DRACO METEOR':{status:'CNF',chance:0.1},'LEAF TORNADO':{status:'CNF',chance:0.2},
 };
 export default MOVE_SECONDARY;

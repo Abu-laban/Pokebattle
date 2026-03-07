@@ -3,18 +3,9 @@
 // ══════════════════════════════════════════
 import { create } from 'zustand';
 import { DEX } from '../data/dex.js';
-import { createWeather, setWeather as engineSet, tickWeather, WEATHER_INFO } from '../engine/weather.js';
+import { Weather, WEATHER_INFO } from '../engine/Weather.js';
+import { BattleMember } from '../engine/BattleMember.js';
 import { SFX } from '../engine/audio.js';
-
-function initMember(poke) {
-  return {
-    poke, hp: poke.hp, ult: 0, fainted: false,
-    stages: { atk:0, def:0, spatk:0, spdef:0, spd:0 },
-    statuses: {},
-    _lastPhysDmgReceived: 0, _lastSpecDmgReceived: 0,
-    _destinyBond: false,
-  };
-}
 
 function addEntry(log, counter, text, cls) {
   const entry = { text, cls: cls || '', id: counter + 1 };
@@ -48,7 +39,7 @@ export const useBattleStore = create((set, get) => ({
   awaitingAllyTargetFor: null,
 
   // ── Weather ─────────────────────────────────
-  weather: createWeather(),
+  weather: new Weather().toPlain(),
 
   // ── Log ─────────────────────────────────────
   log: [], logCounter: 0,
@@ -84,11 +75,9 @@ export const useBattleStore = create((set, get) => ({
   // ── Weather ─────────────────────────────────
   setWeather(type) {
     set(s => {
-      const prev = s.weather.type;
-      const next = engineSet(s.weather, type);
-      const w    = WEATHER_INFO[type];
-      const msg  = prev === type ? `${w.icon} الطقس لا يزال ${w.name}!` : w.onStart;
-      return { weather: next, ...addEntry(s.log, s.logCounter, msg, 'sys') };
+      const w   = new Weather(s.weather.type, s.weather.turns);
+      const msg = w.set(type);
+      return { weather: w.toPlain(), ...(msg ? addEntry(s.log, s.logCounter, msg, 'sys') : {}) };
     });
   },
   doTickWeather() {
@@ -99,7 +88,7 @@ export const useBattleStore = create((set, get) => ({
       return updates;
     });
   },
-  resetWeather() { set({ weather: createWeather() }); },
+  resetWeather() { set({ weather: new Weather() }); },
 
   // ── Start normal battle ─────────────────────
   startBattle() {
@@ -109,12 +98,12 @@ export const useBattleStore = create((set, get) => ({
       const pool = DEX.filter(x => !ids.includes(x.id));
       ids.push(pool[Math.floor(Math.random() * pool.length)].id);
     }
-    const myTeam = ids.map(id => initMember(DEX.find(x => x.id === id)));
+    const myTeam = ids.map(id => BattleMember.fresh(DEX.find(x => x.id === id)).toPlain());
     const ePool  = DEX.filter(x => !myTeam.find(t => t.poke.id === x.id));
     const pool   = [...ePool];
     const enTeam = Array.from({ length: 4 }, () => {
       const pick = pool.splice(Math.floor(Math.random() * pool.length), 1)[0];
-      return initMember(pick);
+      return BattleMember.fresh(pick).toPlain();
     });
     const names  = myTeam.slice(0,2).map(t=>t.poke.name).join(' & ');
     const enames = enTeam.slice(0,2).map(t=>t.poke.name).join(' & ');
@@ -123,7 +112,7 @@ export const useBattleStore = create((set, get) => ({
       pField: [0,1], eField: [0,1], activeAtk: 0,
       active: true, pTurn: true, screen: 'battle',
       gameMode: 'normal', towerActive: false,
-      weather: createWeather(),
+      weather: new Weather().toPlain(),
       pendingMoves: [null,null], pendingTargets: [null,null],
       pendingSwapOldIdx: [null,null], pendingAllyTargets: [null,null],
       awaitingTargetFor: null, awaitingAllyTargetFor: null,
@@ -166,18 +155,18 @@ export const useBattleStore = create((set, get) => ({
 
     SFX.playBattleBGM();
 
-    const pm   = { ...initMember(player), hp: s.towerTeam[idx].hp, ult: s.towerTeam[idx].ult ?? 0 };
-    const em   = initMember(enemy);
+    const pm   = BattleMember.fresh(player, { hp: s.towerTeam[idx].hp, ult: s.towerTeam[idx].ult ?? 0 }).toPlain();
+    const em   = BattleMember.fresh(enemy).toPlain();
     // Tower is 1v1 — fill rest as fainted placeholders
-    const myT  = [pm, { ...initMember(player), fainted: true }, { ...initMember(player), fainted: true }, { ...initMember(player), fainted: true }];
-    const enT  = [em, { ...initMember(enemy),  fainted: true }, { ...initMember(enemy),  fainted: true }, { ...initMember(enemy),  fainted: true }];
+    const myT  = [pm, BattleMember.faintedPlaceholder(player).toPlain(), BattleMember.faintedPlaceholder(player).toPlain(), BattleMember.faintedPlaceholder(player).toPlain()];
+    const enT  = [em, { ...BattleMember.fresh(enemy).toPlain(),  fainted: true }, { ...BattleMember.fresh(enemy).toPlain(),  fainted: true }, { ...BattleMember.fresh(enemy).toPlain(),  fainted: true }];
 
     const msg = `🏰 معركة ${s.towerStreak + 1} | ${player.name} vs ${enemy.name}!`;
     set(s2 => ({
       towerIdx: idx, myTeam: myT, enTeam: enT,
       pField: [0, null], eField: [0, null],
       activeAtk: 0, active: true, pTurn: true, screen: 'battle',
-      weather: createWeather(),
+      weather: new Weather().toPlain(),
       overlayResult: false, overlayTowerFaint: false,
       ...addEntry(s2.log, s2.logCounter, msg, 'sys'),
     }));
@@ -222,7 +211,7 @@ export const useBattleStore = create((set, get) => ({
       screen: 'selection', active: false, pTurn: true,
       myTeam: [], enTeam: [],
       pField: [null,null], eField: [null,null], activeAtk: 0,
-      weather: createWeather(), log: [], logCounter: 0,
+      weather: new Weather().toPlain(), log: [], logCounter: 0,
       overlayResult: false, overlaySwap: false,
       overlayTowerFaint: false, overlayRetreat: false,
       resultData: null, towerActive: false, gameMode: 'normal',

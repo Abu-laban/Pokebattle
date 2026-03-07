@@ -1,7 +1,7 @@
 // WeatherBar — shows active weather with particles
 import { useEffect, useRef } from 'react';
 import { useBattleStore } from '../../store/battleStore.js';
-import { WEATHER_INFO } from '../../engine/weather.js';
+import { WEATHER_INFO } from '../../engine/Weather.js';
 import styles from './WeatherBar.module.css';
 
 export function WeatherBar() {

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useBattleStore }   from './store/battleStore.js';
-import { WEATHER_INFO }     from './engine/weather.js';
+import { WEATHER_INFO }     from './engine/Weather.js';
 import { SFX }              from './engine/audio.js';
 import { SelectionScreen }  from './components/Selection/SelectionScreen.jsx';
 import { BattleScreen }     from './components/Battle/BattleScreen.jsx';

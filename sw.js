@@ -1,8 +1,16 @@
-const CACHE_NAME = 'pokebattle-v3';
+const CACHE_NAME = 'pokebattle-v4';
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json'
+  './',
+  './index.html',
+  './manifest.json',
+  './icons/icon-72.png',
+  './icons/icon-96.png',
+  './icons/icon-128.png',
+  './icons/icon-144.png',
+  './icons/icon-152.png',
+  './icons/icon-192.png',
+  './icons/icon-384.png',
+  './icons/icon-512.png'
 ];
 
 // ── Install: cache core files ──
@@ -25,28 +33,29 @@ self.addEventListener('activate', e => {
   );
 });
 
-// ── Fetch: cache-first للـ assets، network-first للباقي ──
+// ── Fetch Strategy ──
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // الصور من PokeAPI و sprites — cache مع network fallback
-  if (url.hostname.includes('raw.githubusercontent.com') ||
+  // Showdown sprites & PokeAPI — Network first, cache fallback
+  if (url.hostname.includes('play.pokemonshowdown.com') ||
+      url.hostname.includes('raw.githubusercontent.com') ||
       url.hostname.includes('pokeapi.co')) {
     e.respondWith(
-      caches.open(CACHE_NAME).then(cache =>
-        cache.match(e.request).then(cached => {
-          if (cached) return cached;
-          return fetch(e.request).then(response => {
-            if (response.ok) cache.put(e.request, response.clone());
-            return response;
-          }).catch(() => cached);
+      fetch(e.request)
+        .then(response => {
+          if (response.ok) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+          }
+          return response;
         })
-      )
+        .catch(() => caches.match(e.request))
     );
     return;
   }
 
-  // الملفات المحلية — cache first
+  // Local files — Cache first, network fallback
   e.respondWith(
     caches.match(e.request).then(cached =>
       cached || fetch(e.request).then(response => {
@@ -55,6 +64,6 @@ self.addEventListener('fetch', e => {
         }
         return response;
       })
-    ).catch(() => caches.match('/index.html'))
+    ).catch(() => caches.match('./index.html'))
   );
 });
